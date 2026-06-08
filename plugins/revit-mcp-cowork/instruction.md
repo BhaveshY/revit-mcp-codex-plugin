@@ -215,7 +215,7 @@ Get-ChildItem "$addinDir" -Recurse -Filter "RevitMCP*.dll" | Select-Object FullN
 
 **Verify via the MCP bridge** (from Codex, with this plugin installed):
 
-Ask Claude: *"Run a Revit health check."*
+Ask Codex: *"Run a Revit health check."*
 
 The `setup-revit` skill should fire a non-blocking `send_code_to_revit` ping. Expected response: the ping returns within a few seconds with a document-info dump. Old upstream addin would hang on `say_hello`'s blocking modal; the fork fixes that.
 
@@ -256,15 +256,15 @@ Then edit the plugin's `.mcp.json` to point at the local build instead of `npx -
 
 Restart Codex for the change to pick up.
 
-**Verify**: in Cowork, ask Claude to list doors with no explicit limit. Response should include up to the real door count, not be capped at 50 or 100.
+**Verify**: in Codex, ask it to list doors with no explicit limit. Response should include up to the real door count, not be capped at 50 or 100.
 
 ---
 
 ## 10. Verify the fixes landed
 
-Run this checklist via Claude:
+Run this checklist via Codex:
 
-| Check | Ask Claude | Pass condition |
+| Check | Ask Codex | Pass condition |
 |---|---|---|
 | Count accuracy | "How many doors are in this project?" | Returns the real count with the source tool cited (`analyze_model_statistics` or `send_code_to_revit`), not a round-capped 50 or 100. |
 | English errors | "Run `ai_element_filter` on an invalid category name like `OST_Nonsense`." | Error message is in English, e.g. `"Cannot convert 'OST_Nonsense' to a valid Revit BuiltInCategory."` No Chinese characters. |

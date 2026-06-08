@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * PostToolUse hook — scans Revit MCP tool responses for known red flags
- * and surfaces them to Claude as additionalContext so they can't be
+ * and surfaces them to Codex as additionalContext so they can't be
  * silently used as data.
  *
  * Red flags detected:

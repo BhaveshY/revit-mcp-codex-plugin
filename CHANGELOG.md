@@ -84,7 +84,7 @@ Reported numbers are now trustworthy to the same standard as a human opening Rev
 ## [0.4.1] — 2026-04-21
 
 ### Added
-- **`.codex-plugin/marketplace.json`** — the repo now works as a Claude plugin marketplace. Users can install via `/plugin marketplace add BhaveshY/revit-mcp-cowork` followed by `/plugin install revit-mcp-cowork@revit-mcp-cowork`.
+- **`.agents/plugins/marketplace.json`** — the repo works as a Codex plugin marketplace. Users can install via `/plugin marketplace add BhaveshY/revit-mcp-codex-plugin` followed by `/plugin install revit-mcp-cowork@revit-mcp-codex-plugin`.
 - README updated with both install paths (marketplace + `.plugin` file).
 
 ### Fixed

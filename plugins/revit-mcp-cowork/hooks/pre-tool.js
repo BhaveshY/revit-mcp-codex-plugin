@@ -3,7 +3,7 @@
  * PreToolUse hook — intercepts Revit MCP tool calls and enforces safety.
  *
  * For the 4 silently-capped tools, DENIES calls that omit the safe limit and
- * returns an instructive message that tells Claude to retry with the safe
+ * returns an instructive message that tells Codex to retry with the safe
  * parameter value.
  *
  * Blocks `say_hello` outright (it shows a blocking modal in Revit).
@@ -25,7 +25,7 @@ const TOOL_CAPS = {
 };
 
 const BLOCKED_TOOLS = {
-  say_hello: "say_hello shows a blocking modal TaskDialog in Revit that halts the Revit UI until a human clicks OK. Never call it from automation. For a health check, call send_code_to_revit with this snippet:\n\ncsharp\nreturn new { ok = true, title = document?.Title ?? \"(no document)\", view = document?.ActiveView?.Name ?? \"(no view)\" };\n\nSee skills/revit-tool-safety/references/verification-patterns.md."
+  say_hello: "say_hello shows a blocking modal TaskDialog in Revit that halts the Revit UI until a human clicks OK. Never call it from automation. For a health check, call send_code_to_revit with this snippet:\n\ncsharp\nreturn new { ok = true, title = doc?.Title ?? \"(no document)\", view = doc?.ActiveView?.Name ?? \"(no view)\" };\n\nSee skills/revit-tool-safety/references/verification-patterns.md."
 };
 
 // Try to extract the short Revit tool name (last segment) from a possibly

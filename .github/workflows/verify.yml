@@ -1,0 +1,41 @@
+name: Verify
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Validate Codex plugin manifests
+        run: python scripts/validate_codex_plugin.py plugins/revit-mcp-cowork
+      - name: Validate JSON files
+        run: |
+          python -m json.tool .agents/plugins/marketplace.json >/tmp/revit-marketplace.json
+          python -m json.tool plugins/revit-mcp-cowork/.codex-plugin/plugin.json >/tmp/revit-plugin.json
+          python -m json.tool plugins/revit-mcp-cowork/.mcp.json >/tmp/revit-mcp.json
+          python -m json.tool plugins/revit-mcp-cowork/hooks/hooks.json >/tmp/revit-hooks.json
+      - name: Check hook JavaScript syntax
+        run: |
+          node --check plugins/revit-mcp-cowork/hooks/pre-tool.js
+          node --check plugins/revit-mcp-cowork/hooks/post-tool.js
+          node --check plugins/revit-mcp-cowork/hooks/session-start.js
+      - name: Smoke-test hook behavior
+        run: python scripts/test_revit_hooks.py

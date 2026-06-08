@@ -1,6 +1,6 @@
 ---
 name: setup-revit
-description: Use when the user asks to "set up Revit", "install the Revit plugin", "connect Revit to Claude", "configure the Revit MCP", is getting connection errors to Revit, or is running the plugin for the first time. Walks through installing the RevitMCP addin into Revit 2024 on Windows, enabling commands in the Revit ribbon, and verifying the MCP bridge is live.
+description: Use when the user asks to "set up Revit", "install the Revit plugin", "connect Revit to Codex", "configure the Revit MCP", is getting connection errors to Revit, or is running the plugin for the first time. Walks through installing the RevitMCP addin into Revit 2024 on Windows, enabling commands in the Revit ribbon, and verifying the MCP bridge is live.
 ---
 
 # Setup Revit 2024 + Codex Bridge
@@ -59,22 +59,22 @@ The MCP server talks to Revit through a C# addin that must live in Revit's addin
    - Click **Start Listening** (or equivalent).
 5. Open a blank project or any existing `.rvt` file. The bridge only responds when a document is open.
 
-## Step 3 — Verify the Connection from Claude
+## Step 3 — Verify the Connection from Codex
 
 From the user's side in Codex:
 
 1. Make sure the `revit-mcp-cowork` plugin is enabled.
-2. Ask Claude: "Call the Revit `say_hello` tool."
-3. If Claude gets a hello response, the bridge is working — continue.
-4. If Claude gets a timeout or connection refused:
+2. Do **not** call `say_hello`; it opens a blocking modal dialog inside Revit.
+3. Call `send_code_to_revit` with the non-blocking health-check snippet below.
+4. If Codex gets a timeout or connection refused:
    - Confirm Revit is open with a document loaded.
    - Confirm the RevitMCP panel shows "Listening" status.
    - Check Windows Firewall isn't blocking `localhost:8080`.
-   - Restart Revit and retry.
+   - Restart Revit and retry once.
 
 ## Step 4 — Sanity Check
 
-Once `say_hello` works, call `get_current_view_info`. This confirms the bridge can read live data from the open document. If this succeeds, setup is complete.
+After the `send_code_to_revit` health check works, call `get_current_view_info`. This confirms the bridge can read live data from the open document. If this succeeds, setup is complete.
 
 ## What to Tell the User After Setup
 
@@ -90,8 +90,8 @@ Keep it short. Tell them:
 |---|---|---|
 | No RevitMCP tab after launch | Addin files in wrong folder | Verify path is `%AppData%\Autodesk\Revit\Addins\2024\`, not `ProgramData` |
 | Revit shows "blocked" warning each launch | Unsigned addin | Right-click each DLL → Properties → Unblock, or accept "Always Load" on first launch |
-| MCP server starts but `say_hello` times out | Bridge not started in Revit | Open Revit, click Settings on RevitMCP panel, click Start |
-| Port conflict | Another app uses 8080 | Change port in Revit settings and update `.mcp.json` env to match |
+| MCP server times out or refuses connections | Bridge not started in Revit | Open Revit, click Settings on RevitMCP panel, click Start |
+| Port conflict | Another app uses 8080 | Change the port in Revit settings only if the upstream server supports it; otherwise restart the bridge/Revit to free the default port. |
 | "Document is not active" errors | No file open in Revit | Open any `.rvt` document before calling tools |
 
 ## If the User Wants a Different Revit Version
@@ -111,11 +111,11 @@ Instead, call `send_code_to_revit` with this snippet:
 ```csharp
 return new {
     ok = true,
-    title = document?.Title ?? "(no document)",
-    viewName = document?.ActiveView?.Name ?? "(no view)",
-    viewType = document?.ActiveView?.ViewType.ToString() ?? "(none)",
-    revitVersion = document?.Application?.VersionNumber ?? "(unknown)",
-    levelCount = new FilteredElementCollector(document)
+    title = doc?.Title ?? "(no document)",
+    viewName = doc?.ActiveView?.Name ?? "(no view)",
+    viewType = doc?.ActiveView?.ViewType.ToString() ?? "(none)",
+    revitVersion = doc?.Application?.VersionNumber ?? "(unknown)",
+    levelCount = new FilteredElementCollector(doc)
         .OfClass(typeof(Level))
         .GetElementCount()
 };
@@ -131,7 +131,7 @@ Must return within ~5 seconds. If it times out or errors:
 
 A second read-only check to confirm the bridge can produce data:
 - If it returns "no active document," Revit is open but no `.rvt` is loaded. Tell the user to open a project file.
-- If it returns an unexpected view (e.g., schedule or drafting), tell the user which view Claude will be working against — this affects every view-scoped tool (tags, colors, visibility).
+- If it returns an unexpected view (e.g., schedule or drafting), tell the user which view Codex will be working against — this affects every view-scoped tool (tags, colors, visibility).
 
 Run this health check implicitly at the start of any long or destructive operation (scaffold, mirror, bulk delete, C# code push). A failed health check halts the operation before any side effect lands.
 
