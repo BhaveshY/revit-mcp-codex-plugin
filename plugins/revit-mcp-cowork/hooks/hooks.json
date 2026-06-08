@@ -1,0 +1,36 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ./hooks/session-start.js"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "mcp__.*revit.*__.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ./hooks/pre-tool.js"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "mcp__.*revit.*__.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ./hooks/post-tool.js"
+          }
+        ]
+      }
+    ]
+  }
+}

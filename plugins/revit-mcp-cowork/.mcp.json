@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "revit": {
+      "command": "cmd",
+      "cwd": ".",
+      "args": ["/c", "npx", "-y", "mcp-server-for-revit"],
+      "env": {}
+    }
+  }
+}

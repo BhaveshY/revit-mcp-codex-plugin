@@ -1,0 +1,20 @@
+{
+  "name": "revit-mcp-codex-plugin",
+  "interface": {
+    "displayName": "Revit MCP Codex Plugin"
+  },
+  "plugins": [
+    {
+      "name": "revit-mcp-cowork",
+      "source": {
+        "source": "local",
+        "path": "./plugins/revit-mcp-cowork"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

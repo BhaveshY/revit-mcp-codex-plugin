@@ -1,0 +1,43 @@
+{
+  "name": "revit-mcp-cowork",
+  "version": "0.6.0",
+  "description": "Codex plugin for Autodesk Revit 2024 workflows through the mcp-server-for-revit bridge, with safety hooks and task-focused skills.",
+  "author": {
+    "name": "Bhavesh Yeole",
+    "email": "BhaveshYeole@eb-a.de"
+  },
+  "homepage": "https://github.com/BhaveshY/revit-mcp-codex-plugin",
+  "repository": "https://github.com/BhaveshY/revit-mcp-codex-plugin",
+  "license": "MIT",
+  "keywords": [
+    "revit",
+    "bim",
+    "aec",
+    "architecture",
+    "mcp",
+    "autodesk",
+    "building",
+    "excel",
+    "xlsx",
+    "boq"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Revit MCP Cowork",
+    "shortDescription": "Connect Codex to Revit with safety hooks and MCP tools.",
+    "longDescription": "Use Codex with the mcp-server-for-revit bridge and the Revit safety hooks for model, schedule, Excel, and custom API workflows.",
+    "developerName": "Bhavesh Yeole",
+    "category": "Productivity",
+    "capabilities": [
+      "skills",
+      "mcp",
+      "hooks"
+    ],
+    "defaultPrompt": [
+      "Set up the Revit bridge.",
+      "Run a Revit health check.",
+      "Work on the current Revit model."
+    ]
+  },
+  "mcpServers": "./.mcp.json"
+}
