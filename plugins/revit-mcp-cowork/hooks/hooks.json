@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ./hooks/session-start.js"
+            "command": "cmd /c .\\scripts\\node-hook.cmd .\\hooks\\session-start.js"
           }
         ]
       }
@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ./hooks/pre-tool.js"
+            "command": "cmd /c .\\scripts\\node-hook.cmd .\\hooks\\pre-tool.js"
           }
         ]
       }
@@ -27,7 +27,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ./hooks/post-tool.js"
+            "command": "cmd /c .\\scripts\\node-hook.cmd .\\hooks\\post-tool.js"
           }
         ]
       }

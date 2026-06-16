@@ -14,6 +14,7 @@ desktop.ini
 *.plugin
 /dist/
 /build/
+.tmp-codex-home*/
 
 # Node (for any tooling around the plugin)
 node_modules/

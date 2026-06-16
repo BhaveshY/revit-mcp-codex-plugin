@@ -61,7 +61,7 @@ On failure: stop. Do not touch the xlsx. Tell the user what broke, suggest a fix
 Only on Phase 2 success:
 
 1. **Re-query Revit** for the affected elements' current state — use the `UniqueId` set from Phase 1 plus `ai_element_filter`. Pull the same columns that the xlsx already has.
-2. **Read the xlsx** (via `anthropic-skills:xlsx`) to find the header row and identify which rows in the sheet correspond to the affected `UniqueId`s.
+2. **Read the xlsx** via local XLSX handling to find the header row and identify which rows in the sheet correspond to the affected `UniqueId`s.
 3. **Compute a cell-level diff**: for each changed element, which columns actually differ from what's currently in the sheet.
 4. **Write back**:
    - For elements that exist in the sheet: update just the changed cells. Preserve formatting, formulas, other columns.
@@ -107,11 +107,11 @@ Pinning also persists the **key field** used in that xlsx (`UniqueId` vs `Mark`)
 
 ## Freshness guards (required before every write)
 
-The xlsx may live on a mounted NAS where other users or an open Excel session can mutate it between Claude's read and write. Apply these four guards on every mirror run. They are non-optional. See [references/safety-patterns.md](references/safety-patterns.md) for code templates.
+The xlsx may live on a mounted NAS where other users or an open Excel session can mutate it between Codex's read and write. Apply these four guards on every mirror run. They are non-optional. See [references/safety-patterns.md](references/safety-patterns.md) for code templates.
 
 ### Guard 1 — Re-read fresh before every write
 
-Never operate on xlsx data that Claude read in an earlier conversation turn. At the start of Phase 3 (Mirror), always re-read the file from disk. If the file content was loaded 10 turns ago, it's stale by definition.
+Never operate on xlsx data that Codex read in an earlier conversation turn. At the start of Phase 3 (Mirror), always re-read the file from disk. If the file content was loaded 10 turns ago, it's stale by definition.
 
 ### Guard 2 — Lock-file detection
 
@@ -192,7 +192,7 @@ Ask which sheet to mirror to, or offer to create a new one. Don't silently do th
 
 ## If the xlsx lives on a NAS / network share (QNAP, Synology, SMB server)
 
-This is the common office setup. The plugin can't reach a NAS unless the share is either mounted as a local drive on the Cowork host or exposed through an MCP bridge. Before the first mirror run on a NAS-hosted tracker:
+This is the common office setup. The plugin can't reach a NAS unless the share is either mounted as a local drive on the Codex host or exposed through an MCP bridge. Before the first mirror run on a NAS-hosted tracker:
 
 1. Verify the file opens at a local path (e.g., `Z:\Projects\doors.xlsx` on Windows after mapping, or `/Volumes/Projects/doors.xlsx` on Mac).
 2. If it doesn't, read [references/network-storage.md](references/network-storage.md) — it covers the three practical patterns: mount as drive, local staging copy, or File Station HTTP API.

@@ -1,110 +1,97 @@
 ---
 name: setup-revit
-description: Use when the user asks to "set up Revit", "install the Revit plugin", "connect Revit to Codex", "configure the Revit MCP", is getting connection errors to Revit, or is running the plugin for the first time. Walks through installing the RevitMCP addin into Revit 2024 on Windows, enabling commands in the Revit ribbon, and verifying the MCP bridge is live.
+description: Use when the user asks to "set up Revit", "install the Revit plugin", "connect Revit to Codex", "configure the Revit MCP", is getting connection errors to Revit, or is running the plugin for the first time. Walks through installing the Revit MCP addin into Revit 2024 on Windows, enabling the Revit bridge, and verifying the MCP connection from Codex Desktop.
 ---
 
 # Setup Revit 2024 + Codex Bridge
 
-This skill guides the user through the one-time setup required before any other skill in this plugin will work. The MCP server (`mcp-server-for-revit`) is only half of the bridge — the other half is a C# addin that runs inside Revit 2024 and listens for commands.
+This skill guides the user through the one-time setup required before any other Revit skill will work. The MCP server (`mcp-server-for-revit`) is only half of the bridge; the other half is a C# addin that runs inside Revit 2024 and listens for commands.
 
 ## Prerequisites Check
 
 Before anything else, confirm the user has:
 
-1. **Revit 2024** installed on Windows (check `C:\Program Files\Autodesk\Revit 2024\`)
-2. **Node.js** installed (run `node --version` in PowerShell — any version 18+ is fine, `npx` is used to launch the MCP server)
-3. **Codex** with this plugin enabled
+1. Revit 2024 installed on Windows. Check `C:\Program Files\Autodesk\Revit 2024\`.
+2. Node.js 22 LTS installed or available at `%USERPROFILE%\.local\nodejs22`. Node 20+ is supported, but Node 22 is the tested path for the MCP server native dependency.
+3. Codex Desktop with this plugin installed and enabled.
 
-If any are missing, stop and tell the user to install them first. Link to nodejs.org for Node.
+If any are missing, stop and tell the user to install them first. For a fresh Windows setup from this repo, recommend:
 
-## Step 1 — Install the Revit Addin
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\install-windows-codex-desktop.ps1
+```
+
+## Step 1: Install The Revit Addin
 
 The MCP server talks to Revit through a C# addin that must live in Revit's addins folder.
 
-1. Open a browser and go to the [releases page](https://github.com/mcp-servers-for-revit/mcp-servers-for-revit/releases).
-2. Download the latest ZIP that matches **Revit 2024** (look for `RevitMCP-2024` or a "2024" suffix).
-3. Extract the ZIP. You should see at least:
-   - `RevitMCP.addin` — the manifest file
-   - `RevitMCP.dll` + dependencies — the compiled plugin
-   - A `Commands\RevitMCPCommandSet\2024\` folder with command DLLs
-4. Copy **all extracted contents** into:
+1. Open the upstream release page: `https://github.com/mcp-servers-for-revit/mcp-servers-for-revit/releases/tag/v1.0.0`.
+2. Download `mcp-servers-for-revit-v1.0.0-Revit2024.zip`.
+3. Extract the ZIP. It should contain one or more `.addin` manifest files and the Revit MCP addin payload folder.
+4. Copy all extracted addin contents into:
 
-   ```
+   ```text
    %AppData%\Autodesk\Revit\Addins\2024\
    ```
 
-   Paste `%AppData%\Autodesk\Revit\Addins\2024\` into the Windows Explorer address bar — it expands to `C:\Users\<you>\AppData\Roaming\Autodesk\Revit\Addins\2024\`. Create the `2024` folder if it doesn't exist.
+   Paste that path into Windows Explorer. It expands to `C:\Users\<you>\AppData\Roaming\Autodesk\Revit\Addins\2024\`. Create the `2024` folder if it does not exist.
 
-5. The final layout inside that folder should look like:
+## Step 2: Enable The Addin In Revit
 
-   ```
-   Addins\2024\
-   ├── RevitMCP.addin
-   ├── RevitMCP.dll
-   ├── ...other dlls...
-   └── Commands\
-       └── RevitMCPCommandSet\
-           └── 2024\
-               └── ...command dlls...
-   ```
+1. Launch Revit 2024.
+2. If Revit warns about loading unsigned code, choose `Always Load`. If the user chooses `Do Not Load`, the addin will not appear.
+3. Open a blank project or any existing `.rvt` file. The bridge only responds when a document is open.
+4. Find the Revit MCP panel, open Settings if needed, and click `Start Listening`.
+5. Leave the default port, usually `8080`, unless the user has a specific reason to change it.
 
-## Step 2 — Enable the Addin in Revit
-
-1. Launch **Revit 2024**.
-2. If Windows shows a security warning about loading unsigned code, click **Always Load**. If you click "Do not load," the addin will not appear.
-3. Once Revit is open, look for a new **RevitMCP** tab (or a panel on the **Add-Ins** tab — depends on the release).
-4. Click **Settings** on that panel. In the settings dialog:
-   - Toggle **Enable MCP Bridge** on.
-   - Leave the default port (usually `8080`) unless the user has a reason to change it.
-   - Click **Start Listening** (or equivalent).
-5. Open a blank project or any existing `.rvt` file. The bridge only responds when a document is open.
-
-## Step 3 — Verify the Connection from Codex
+## Step 3: Verify The Connection From Codex
 
 From the user's side in Codex:
 
-1. Make sure the `revit-mcp-cowork` plugin is enabled.
-2. Do **not** call `say_hello`; it opens a blocking modal dialog inside Revit.
-3. Call `send_code_to_revit` with the non-blocking health-check snippet below.
-4. If Codex gets a timeout or connection refused:
+1. Fully quit and reopen Codex Desktop after installing the plugin, changing PATH, or installing Node.
+2. Make sure the `revit-mcp-cowork` plugin is enabled.
+3. Do not call `say_hello`; it opens a blocking modal dialog inside Revit.
+4. Ask Codex: `Run a Revit health check.`
+5. If Codex gets a timeout or connection refused:
    - Confirm Revit is open with a document loaded.
-   - Confirm the RevitMCP panel shows "Listening" status.
-   - Check Windows Firewall isn't blocking `localhost:8080`.
+   - Confirm the Revit MCP panel shows listening/running status.
+   - Confirm Node is available with `node --version`.
+   - Confirm the npm bridge is installed with `npm list -g mcp-server-for-revit`.
    - Restart Revit and retry once.
 
-## Step 4 — Sanity Check
+## Step 4: Sanity Check
 
-After the `send_code_to_revit` health check works, call `get_current_view_info`. This confirms the bridge can read live data from the open document. If this succeeds, setup is complete.
+After the non-blocking `send_code_to_revit` health check works, call `get_current_view_info`. This confirms the bridge can read live data from the open document. If this succeeds, setup is complete.
 
-## What to Tell the User After Setup
+## What To Tell The User After Setup
 
 Keep it short. Tell them:
 
-- They can now ask in natural language — e.g., "create 5 levels 3m apart," "tag all walls in this view," "show me a material takeoff."
-- Other skills in this plugin (`scaffold-project`, `quick-model`, `model-audit`, etc.) will automatically take over for their respective workflows.
+- They can now ask in natural language, for example: "create 5 levels 3m apart", "tag all walls in this view", or "show me a material takeoff".
+- Other skills in this plugin (`scaffold-project`, `quick-model`, `model-audit`, and others) will automatically take over for their respective workflows.
 - The Revit bridge must stay running in Revit for any skill to work. Closing Revit breaks the connection.
 
 ## Common Setup Issues
 
 | Symptom | Likely cause | Fix |
 |---|---|---|
-| No RevitMCP tab after launch | Addin files in wrong folder | Verify path is `%AppData%\Autodesk\Revit\Addins\2024\`, not `ProgramData` |
-| Revit shows "blocked" warning each launch | Unsigned addin | Right-click each DLL → Properties → Unblock, or accept "Always Load" on first launch |
-| MCP server times out or refuses connections | Bridge not started in Revit | Open Revit, click Settings on RevitMCP panel, click Start |
-| Port conflict | Another app uses 8080 | Change the port in Revit settings only if the upstream server supports it; otherwise restart the bridge/Revit to free the default port. |
+| No Revit MCP tab after launch | Addin files in wrong folder | Verify path is `%AppData%\Autodesk\Revit\Addins\2024\`, not `ProgramData` |
+| Revit shows a blocked or unsigned warning | Unsigned addin | Choose `Always Load` on first launch |
+| MCP server times out or refuses connections | Bridge not started in Revit | Open Revit, open a project, start the listener |
+| Node install fails on `better-sqlite3` | Node 24 native build path | Install Node 22 LTS, then rerun `npm install -g mcp-server-for-revit` |
 | "Document is not active" errors | No file open in Revit | Open any `.rvt` document before calling tools |
 
-## If the User Wants a Different Revit Version
+## If The User Wants A Different Revit Version
 
-This plugin targets Revit 2024. The server supports 2020–2026 if they swap the addin build — direct them to download the matching release and copy it into `Addins\<version>\`. No other changes needed on the Cowork side.
+This plugin targets Revit 2024. The server supports 2020-2026 if the user installs the matching Revit addin build into `Addins\<version>\`. No other Codex-side config change is normally needed.
 
-## Health check — run this at the start of every session
+## Health Check: Run This At The Start Of Every Session
 
-Before doing any significant work (scaffold, mirror, bulk mods, code-runner), verify the bridge is live. Two-step check, both non-blocking:
+Before doing significant work, verify the bridge is live. Use this two-step check, both non-blocking.
 
-**Step 1 — connection ping (via `send_code_to_revit`, NOT `say_hello`)**
+### Step 1: connection ping via `send_code_to_revit`
 
-**Do not use `say_hello`.** The upstream `say_hello` handler shows a modal `TaskDialog` in Revit that halts the UI until a human dismisses it — catastrophic for automation.
+Do not use `say_hello`. The upstream `say_hello` handler shows a modal `TaskDialog` in Revit and can halt automation until a human dismisses it.
 
 Instead, call `send_code_to_revit` with this snippet:
 
@@ -121,22 +108,26 @@ return new {
 };
 ```
 
-Must return within ~5 seconds. If it times out or errors:
-- Revit is closed → tell user to open it.
-- Bridge is stopped → tell user to click Start in the RevitMCP panel.
-- Port conflict → restart Revit.
-- Revit is in a modal dialog → the user has to dismiss it.
+It should return within about 5 seconds. If it times out or errors:
 
-**Step 2 — verify active document via `get_current_view_info`**
+- Revit is closed: tell the user to open it.
+- The bridge is stopped: tell the user to click Start in the Revit MCP panel.
+- Revit has no document open: tell the user to open a project file.
+- Revit is in a modal dialog: the user has to dismiss it.
 
-A second read-only check to confirm the bridge can produce data:
-- If it returns "no active document," Revit is open but no `.rvt` is loaded. Tell the user to open a project file.
-- If it returns an unexpected view (e.g., schedule or drafting), tell the user which view Codex will be working against — this affects every view-scoped tool (tags, colors, visibility).
+### Step 2: verify active document via `get_current_view_info`
 
-Run this health check implicitly at the start of any long or destructive operation (scaffold, mirror, bulk delete, C# code push). A failed health check halts the operation before any side effect lands.
+Use `get_current_view_info` as a second read-only check:
 
-When the user's first message in a session mentions Revit, run the health check first even if no heavy op is planned. Report results in one line:
+- If it returns no active document, Revit is open but no `.rvt` is loaded.
+- If it returns an unexpected view, tell the user which view Codex will work against because this affects view-scoped tools.
 
-> ✔ Revit 2024 bridge live. Document: `ProjectX.rvt` | view: `Level 2 — Floor Plan` | 5 levels | build 2024.3.
+Run this health check at the start of any long or destructive operation. A failed health check halts the operation before any side effect lands.
 
-On retry-worthy failure (generic 2-minute timeout on first call), **retry once**. If the retry also fails, stop and surface the fix steps from the troubleshooting table. Never silently retry more than once — repeated hangs indicate a real problem.
+When the user's first message in a session mentions Revit, run the health check first even if no heavy operation is planned. Report results in one line:
+
+```text
+Revit 2024 bridge live. Document: ProjectX.rvt | view: Level 2 - Floor Plan | 5 levels | build 2024.3.
+```
+
+On retry-worthy failure, such as a generic first-call timeout, retry once. If the retry also fails, stop and surface the fix steps from the troubleshooting table.

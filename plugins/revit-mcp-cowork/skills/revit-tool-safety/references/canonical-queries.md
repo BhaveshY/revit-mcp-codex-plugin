@@ -4,7 +4,7 @@ Every template here is designed to run via `send_code_to_revit` and return compl
 
 All templates:
 
-- Return a JSON string (parse on the Claude side).
+- Return a JSON string (parse on the Codex side).
 - Complete within the 60-second `send_code_to_revit` timeout.
 - Run inside an auto-wrapped read-only scope — no mutations.
 - Omit the `using (var t = new Transaction(...))` wrapper because these queries don't modify the model. The `send_code_to_revit` auto-transaction is fine; any `set` operation added later MUST go inside the wrapper.

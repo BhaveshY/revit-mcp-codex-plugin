@@ -46,7 +46,7 @@ Every script you send must follow Revit API discipline. Non-negotiable rules:
 - **Use the active `Document` and `UIDocument`** — the server typically exposes these as `doc` and `uidoc` globals. If not, retrieve via `commandData.Application.ActiveUIDocument.Document`.
 - **Filtered element collectors** are the way to query — `new FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Walls).WhereElementIsNotElementType()`.
 - **Regenerate after modifications** if the script needs updated geometry: `doc.Regenerate()`.
-- **Return a string result** — the MCP tool pipes stdout / a return value back to Claude. Put the summary there.
+- **Return a string result** — the MCP tool pipes stdout / a return value back to Codex. Put the summary there.
 
 ### 3. Template — always start from this shape
 

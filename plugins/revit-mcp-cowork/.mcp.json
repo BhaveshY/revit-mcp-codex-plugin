@@ -3,7 +3,7 @@
     "revit": {
       "command": "cmd",
       "cwd": ".",
-      "args": ["/c", "npx", "-y", "mcp-server-for-revit"],
+      "args": ["/c", ".\\scripts\\launch-revit-mcp.cmd"],
       "env": {}
     }
   }

@@ -7,7 +7,7 @@ description: Use when the user asks to "sync Revit with Excel", "update Excel fr
 
 Use this skill whenever Revit data and an Excel workbook must stay aligned — typical case: the team maintains door/window/room schedules in Excel while the geometry lives in Revit, and both sides drift apart.
 
-This skill **orchestrates**; it delegates file I/O to the `anthropic-skills:xlsx` skill and Revit reads to the standard MCP tools. Writes back to Revit use the `send_code_to_revit` tool (with the show → confirm → run discipline from `revit-code-runner`).
+This skill **orchestrates**; it handles workbook file I/O with whatever XLSX-capable workflow is available in the Codex environment, and Revit reads use the standard MCP tools. Writes back to Revit use the `send_code_to_revit` tool (with the show → confirm → run discipline from `revit-code-runner`).
 
 ## When this skill applies
 
@@ -46,10 +46,12 @@ If the user said "sync," ask (or infer from context) which direction. "Update Ex
 - `send_code_to_revit` — the only way to **write parameters** back to Revit, and the way to get unit-consistent reads beyond the standard tool units.
 - `get_current_view_info` — scope confirmation.
 
-**From xlsx skill** (delegate to `anthropic-skills:xlsx`)
+**From local XLSX handling**
 - Read workbook, identify sheet + header row
 - Write workbook with preserved formatting
 - Diff two tabular datasets
+
+Do not invoke `anthropic-skills:xlsx`; it is Claude-specific and may not exist in Codex. Prefer an installed XLSX skill if one is present, or Python with `openpyxl` if it is already available. If no XLSX writer is available, ask before installing a dependency or offer CSV instead.
 
 ## The key field problem — solve it first
 
@@ -70,14 +72,14 @@ A sheet without any of these is unreliable. Refuse to push from such a sheet —
 3. **Query Revit.** `ai_element_filter` per category with the parameter list. Use `export_room_data` for rooms — it's faster.
 4. **Assemble a table per category.** One sheet per category in the xlsx (e.g., `Doors`, `Windows`, `Rooms`).
 5. **Add the key column first** (`UniqueId` by default, or `Mark` if user prefers). Follow with human columns.
-6. **Write via xlsx skill.** Invoke `anthropic-skills:xlsx` with the tabular data. Preserve existing sheets the user didn't ask to replace — **never overwrite a full workbook the user cares about**.
+6. **Write via local XLSX handling.** Use the available XLSX workflow with the tabular data. Preserve existing sheets the user didn't ask to replace — **never overwrite a full workbook the user cares about**.
 7. **Report** rows written, path to the file, and a short note: "UniqueId is in column A. Don't remove it — it's how the push step finds each element."
 
 ## Workflow: PUSH (Excel → Revit)
 
 This is the destructive direction. Be strict.
 
-1. **Read the xlsx** via the xlsx skill. Identify headers, key column, data rows.
+1. **Read the xlsx** via local XLSX handling. Identify headers, key column, data rows.
 2. **Validate the sheet.**
    - Key column present and non-empty on every row.
    - No duplicate keys.
@@ -162,6 +164,6 @@ Restate the unit in every preview and report.
 
 ## Notes on combining with other skills
 
-- After a PULL, the xlsx skill can take over for any further spreadsheet manipulation (formulas, formatting, charts).
+- After a PULL, the same XLSX handling workflow can take over for any further spreadsheet manipulation (formulas, formatting, charts).
 - After a PUSH, run `model-audit` to confirm the model state.
 - For exotic writes (e.g., modifying shared parameters, writing to project info), fall through to `revit-code-runner` directly.

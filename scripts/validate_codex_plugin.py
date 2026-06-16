@@ -18,7 +18,7 @@ SEMVER_RE = re.compile(
     r"(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$"
 )
 ALLOWED_PLUGIN_KEYS = {
-    "id", "name", "version", "description", "skills", "apps", "mcpServers",
+    "id", "name", "version", "description", "skills", "hooks", "apps", "mcpServers",
     "interface", "author", "homepage", "repository", "license", "keywords",
 }
 ALLOWED_INTERFACE_KEYS = {
@@ -80,6 +80,51 @@ def validate_skill_files(skills_dir: Path, errors: list[str]) -> None:
             errors.append(f"{path} contains [TODO: placeholder")
 
 
+def resolve_relative_token(plugin_root: Path, token: str) -> Path | None:
+    if not isinstance(token, str):
+        return None
+    cleaned = token.strip('"').strip("'")
+    if cleaned.startswith("./") or cleaned.startswith(".\\"):
+        return plugin_root / cleaned[2:].replace("\\", "/")
+    return None
+
+
+def validate_hooks_file(hooks_path: Path, plugin_root: Path, errors: list[str]) -> None:
+    hooks_config = load_json(hooks_path, errors)
+    if not isinstance(hooks_config, dict):
+        errors.append(f"{hooks_path} must contain an object")
+        return
+    hooks = hooks_config.get("hooks")
+    if not isinstance(hooks, dict) or not hooks:
+        errors.append(f"{hooks_path} must contain a non-empty hooks object")
+        return
+    for event_name, event_entries in hooks.items():
+        if not isinstance(event_entries, list) or not event_entries:
+            errors.append(f"{hooks_path} hooks.{event_name} must be a non-empty array")
+            continue
+        for event_index, event_entry in enumerate(event_entries):
+            commands = event_entry.get("hooks") if isinstance(event_entry, dict) else None
+            if not isinstance(commands, list) or not commands:
+                errors.append(f"{hooks_path} hooks.{event_name}[{event_index}].hooks must be a non-empty array")
+                continue
+            for hook_index, hook in enumerate(commands):
+                if not isinstance(hook, dict):
+                    errors.append(f"{hooks_path} hooks.{event_name}[{event_index}].hooks[{hook_index}] must be an object")
+                    continue
+                if hook.get("type") != "command":
+                    errors.append(f"{hooks_path} hooks.{event_name}[{event_index}].hooks[{hook_index}].type must be 'command'")
+                    continue
+                command = hook.get("command")
+                if not nonempty_string(command):
+                    errors.append(f"{hooks_path} hooks.{event_name}[{event_index}].hooks[{hook_index}].command is required")
+                    continue
+                for token in command.split():
+                    script_path = resolve_relative_token(plugin_root, token)
+                    if script_path and script_path.suffix.lower() in {".js", ".cmd"}:
+                        if not script_path.is_file():
+                            errors.append(f"{hooks_path} references missing hook script: {token}")
+
+
 def validate(repo_root: Path, plugin_rel: str) -> list[str]:
     errors: list[str] = []
     plugin_root = (repo_root / plugin_rel).resolve()
@@ -122,11 +167,27 @@ def validate(repo_root: Path, plugin_rel: str) -> list[str]:
         if skill_path != "./skills/":
             errors.append("plugin.json skills should be './skills/'")
         validate_skill_files(plugin_root / skill_path.replace("./", ""), errors)
+    if manifest.get("hooks"):
+        hooks_path_value = manifest["hooks"]
+        if not isinstance(hooks_path_value, str) or not hooks_path_value.startswith("./"):
+            errors.append("plugin.json hooks must be a relative path starting with './'")
+        else:
+            validate_hooks_file(plugin_root / hooks_path_value.replace("./", ""), plugin_root, errors)
     if manifest.get("mcpServers"):
         mcp_path = plugin_root / str(manifest["mcpServers"]).replace("./", "")
         mcp = load_json(mcp_path, errors)
         if not isinstance(mcp, dict) or not isinstance(mcp.get("mcpServers"), dict) or not mcp["mcpServers"]:
             errors.append(f"{mcp_path} must contain a non-empty mcpServers object")
+        else:
+            for server_name, server_config in mcp["mcpServers"].items():
+                if not isinstance(server_config, dict):
+                    errors.append(f"{mcp_path} mcpServers.{server_name} must be an object")
+                    continue
+                for arg in server_config.get("args", []):
+                    script_path = resolve_relative_token(plugin_root, str(arg))
+                    if script_path and script_path.suffix.lower() in {".cmd", ".ps1", ".js"}:
+                        if not script_path.is_file():
+                            errors.append(f"{mcp_path} mcpServers.{server_name} references missing script: {arg}")
     if not isinstance(marketplace, dict):
         errors.append("marketplace.json must contain an object")
         return errors

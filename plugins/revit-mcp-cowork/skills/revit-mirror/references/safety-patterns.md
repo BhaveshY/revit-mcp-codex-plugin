@@ -6,12 +6,12 @@ These patterns apply regardless of whether the xlsx is on a local disk, a mounte
 
 ## Guard 1 — Re-read fresh
 
-**Purpose**: avoid operating on a copy of the xlsx that Claude read earlier in the conversation. Conversation memory is not a file cache.
+**Purpose**: avoid operating on a copy of the xlsx that Codex read earlier in the conversation. Conversation memory is not a file cache.
 
 **Procedure**:
 
 1. At the very start of Phase 3, discard any in-memory representation of the xlsx from earlier turns.
-2. Invoke `anthropic-skills:xlsx` with a fresh read of the target path.
+2. Use local XLSX handling to perform a fresh read of the target path.
 3. Use the just-read data as the baseline for diffing.
 
 **Anti-patterns**:
@@ -47,7 +47,7 @@ if os.path.exists(lock_path):
 
 ## Guard 3 — Mtime / ETag check (TOCTOU guard)
 
-**Purpose**: catch the case where another process or user saved the file between Claude's read and Claude's write (TOCTOU — time of check to time of use).
+**Purpose**: catch the case where another process or user saved the file between Codex's read and Codex's write (TOCTOU — time of check to time of use).
 
 **Procedure**:
 

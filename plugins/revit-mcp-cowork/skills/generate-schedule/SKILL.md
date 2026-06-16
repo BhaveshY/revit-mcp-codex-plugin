@@ -94,10 +94,10 @@ When storing, give the snapshot a descriptive name + timestamp — e.g., `Projec
 No dedicated CSV-export MCP tool exists. When the user asks to "export to CSV":
 
 1. Pull the data via the relevant tool.
-2. Write it to a `.csv` file in the user's working directory using the Write tool (regular file I/O, not the MCP).
+2. Write it to a `.csv` file in the user's working directory using normal filesystem edits, not the Revit MCP.
 3. Confirm the file path and offer to open it.
 
-If the user wants XLSX specifically, hand off to the `anthropic-skills:xlsx` skill with the tabular data in hand.
+If the user wants XLSX specifically, use an available XLSX-capable workflow in the Codex environment, such as Python with `openpyxl` if it is already installed. If no XLSX writer is available, ask before installing a dependency or offer CSV instead.
 
 ## Guardrails
 

@@ -1,6 +1,6 @@
 {
   "name": "revit-mcp-cowork",
-  "version": "0.6.0",
+  "version": "0.6.4",
   "description": "Codex plugin for Autodesk Revit 2024 workflows through the mcp-server-for-revit bridge, with safety hooks and task-focused skills.",
   "author": {
     "name": "Bhavesh Yeole",
@@ -22,6 +22,7 @@
     "boq"
   ],
   "skills": "./skills/",
+  "hooks": "./hooks/hooks.json",
   "interface": {
     "displayName": "Revit MCP Cowork",
     "shortDescription": "Connect Codex to Revit with safety hooks and MCP tools.",

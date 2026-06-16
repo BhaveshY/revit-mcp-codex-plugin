@@ -2,20 +2,59 @@
 
 All notable changes to the `revit-mcp-cowork` plugin. Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow [Semantic Versioning](https://semver.org/).
 
+## [0.6.4] - 2026-06-16
+
+### Added
+
+- Added a Windows Codex Desktop installation guide for repo-link installs.
+- Added `scripts/install-windows-codex-desktop.ps1` to bootstrap Node 22, the npm Revit MCP server, the Revit 2024 addin, and this Codex plugin from the GitHub repo source.
+
+### Changed
+
+- README now leads with the tested Codex Desktop repo-link install flow and clarifies that the Revit addin and Node runtime are separate local prerequisites.
+- Troubleshooting and setup docs now recommend Node 22 LTS for the MCP server native dependency.
+
+## [0.6.3] - 2026-06-16
+
+### Fixed
+
+- Preferred `%USERPROFILE%\.local\nodejs22` in Windows launchers because the MCP server's native dependency currently installs reliably on Node 22 but not Node 24 without Visual Studio C++ build tools.
+- Updated the MCP launcher to use a globally installed `mcp-server-for-revit.cmd` from Node 22 when available.
+
+## [0.6.2] - 2026-06-16
+
+### Fixed
+
+- Added Windows launcher scripts for MCP startup and hook execution so Codex Desktop can find user-local Node.js installs even when its inherited PATH is stale.
+- Preferred a globally installed `mcp-server-for-revit.cmd` over ephemeral `npx`, reducing startup/cache cleanup failures in desktop sessions.
+- Updated `.mcp.json` to launch Revit MCP through `scripts/launch-revit-mcp.cmd`.
+- Updated hook commands to launch through `scripts/node-hook.cmd`.
+- Extended repo validation to verify referenced `.cmd` launcher scripts.
+
+## [0.6.1] - 2026-06-16
+
+### Fixed
+
+- Declared the plugin hook config in `plugin.json` via `hooks: "./hooks/hooks.json"` so hook-capable Codex clients can discover the bundled safety hooks.
+- Updated the Codex install commands from legacy slash-command examples to current CLI commands.
+- Corrected the runtime prerequisite from Node.js 18+ to Node.js 20+, matching `mcp-server-for-revit` package engines.
+- Replaced Claude-specific XLSX skill references with Codex-local XLSX handling guidance.
+- Updated the repo validator to verify hook config shape and referenced hook scripts.
+
 ## [0.6.0] — 2026-04-22
 
 ### Added — hook-enforced tool safety (applies to EVERY Revit tool call)
 
-Skills only fire when Claude chooses them. If a user writes an ad-hoc query that doesn't match a skill trigger, the tool-safety rules in v0.5.0 would not apply. Hooks run at the transport layer and enforce safety regardless of whether any skill is active.
+Skills only fire when Codex chooses them. If a user writes an ad-hoc query that doesn't match a skill trigger, the tool-safety rules in v0.5.0 would not apply. Hooks run at the transport layer and enforce safety regardless of whether any skill is active.
 
 - **`hooks/hooks.json`** — configuration for SessionStart, PreToolUse, and PostToolUse hooks matching `mcp__*revit*__*` tool names.
 - **`hooks/session-start.js`** — injects the tool-safety summary into every Revit session as `additionalContext`. Silent caps, unit inconsistencies, blocked tools, bilingual errors, citation discipline. Always in context whenever the plugin is active.
 - **`hooks/pre-tool.js`** — intercepts every Revit MCP tool call before it runs:
-  - **Blocks** `ai_element_filter` / `get_current_view_elements` / `get_selected_elements` / `get_available_family_types` if they omit the safe explicit limit. The tool call is denied with a retry instruction containing the exact parameter to add. Claude retries with `maxElements: 100000` (or `limit: 100000`) and the call succeeds. Silent truncation is now impossible.
+  - **Blocks** `ai_element_filter` / `get_current_view_elements` / `get_selected_elements` / `get_available_family_types` if they omit the safe explicit limit. The tool call is denied with a retry instruction containing the exact parameter to add. Codex retries with `maxElements: 100000` (or `limit: 100000`) and the call succeeds. Silent truncation is now impossible.
   - **Blocks** `say_hello` outright — it shows a blocking modal in Revit that wedges the UI. Suggests the `send_code_to_revit` health-ping snippet instead.
   - **Warns** on `delete_element` (cascade risk — suggests pre/post `analyze_model_statistics` snapshots).
   - **Warns** on `send_code_to_revit` (transaction mode + 60s timeout reminder).
-- **`hooks/post-tool.js`** — scans every Revit MCP tool response for red flags and surfaces them to Claude:
+- **`hooks/post-tool.js`** — scans every Revit MCP tool response for red flags and surfaces them to Codex:
   - Chinese error prefixes (`操作超时`, `失败`, `错误`, `获取元素信息时出错`, etc.) — translates to English and marks as error, not data.
   - Known silent-cap response lengths (`ai_element_filter` returning exactly 50 elements, `get_current_view_elements` returning exactly 100) — flags as "almost certainly truncated" and instructs a retry.
   - `Success: false` responses — flags as failure, prevents silent continuation.
@@ -26,7 +65,7 @@ Skills only fire when Claude chooses them. If a user writes an ad-hoc query that
 The v0.5.0 skill-level discipline is now backed by the harness itself:
 
 - Even if the user writes a prompt that doesn't trigger any configured skill, the PreToolUse hook enforces safe parameters on capped tools.
-- Even if Claude's attention drifts mid-session, the PostToolUse hook catches anomalies before they reach the user.
+- Even if Codex's attention drifts mid-session, the PostToolUse hook catches anomalies before they reach the user.
 - Even ad-hoc C# scripts benefit from transaction + timeout reminders.
 
 Combined with v0.5.0's skill rules, the plugin now has **two independent layers** protecting against wrong answers: the skills provide guidance + templates, and the hooks provide deterministic enforcement.
@@ -37,7 +76,7 @@ All hooks fail open. If a script errors, the tool call proceeds as if the hook d
 
 ### Compatibility
 
-- Node.js 18+ (already required for the MCP server — no new dependency).
+- Node.js 20+ (already required for the MCP server — no new dependency).
 - All hook scripts are cross-platform (macOS, Windows, Linux) via Node.
 - Plugin-local relative paths are resolved from the installed plugin root, so the docs and hooks work regardless of install location.
 
@@ -84,7 +123,7 @@ Reported numbers are now trustworthy to the same standard as a human opening Rev
 ## [0.4.1] — 2026-04-21
 
 ### Added
-- **`.agents/plugins/marketplace.json`** — the repo works as a Codex plugin marketplace. Users can install via `/plugin marketplace add BhaveshY/revit-mcp-codex-plugin` followed by `/plugin install revit-mcp-cowork@revit-mcp-codex-plugin`.
+- **`.agents/plugins/marketplace.json`** — the repo works as a Codex plugin marketplace. Users can install via `codex plugin marketplace add BhaveshY/revit-mcp-codex-plugin` followed by `codex plugin add revit-mcp-cowork@revit-mcp-codex-plugin`.
 - README updated with both install paths (marketplace + `.plugin` file).
 
 ### Fixed

@@ -63,7 +63,7 @@ If the user's ask is ambiguous, default to **full project** + a note about the c
 Call tools in parallel when possible — they're read-only. For a full audit, always grab:
 
 1. Project statistics (counts per category)
-2. Current view info (so the user knows where Claude is "looking from")
+2. Current view info (so the user knows where Codex is "looking from")
 3. Currently selected elements (if any)
 
 ### 3. Structure the output
