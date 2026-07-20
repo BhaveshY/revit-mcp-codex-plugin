@@ -1,44 +1,39 @@
 {
   "name": "revit-mcp-cowork",
-  "version": "0.6.4",
-  "description": "Codex plugin for Autodesk Revit 2024 workflows through the mcp-server-for-revit bridge, with safety hooks and task-focused skills.",
+  "version": "1.0.0+codex.20260720093522",
+  "description": "Windows 11-only Codex plugin for safe, token-efficient Autodesk Revit 2024 automation through Revit MCP Next.",
   "author": {
     "name": "Bhavesh Yeole",
-    "email": "BhaveshYeole@eb-a.de"
+    "url": "https://github.com/BhaveshY"
   },
   "homepage": "https://github.com/BhaveshY/revit-mcp-codex-plugin",
   "repository": "https://github.com/BhaveshY/revit-mcp-codex-plugin",
   "license": "MIT",
   "keywords": [
     "revit",
+    "revit-2024",
     "bim",
     "aec",
-    "architecture",
     "mcp",
-    "autodesk",
-    "building",
-    "excel",
-    "xlsx",
-    "boq"
+    "autodesk"
   ],
   "skills": "./skills/",
-  "hooks": "./hooks/hooks.json",
+  "mcpServers": "./.mcp.json",
   "interface": {
-    "displayName": "Revit MCP Cowork",
-    "shortDescription": "Connect Codex to Revit with safety hooks and MCP tools.",
-    "longDescription": "Use Codex with the mcp-server-for-revit bridge and the Revit safety hooks for model, schedule, Excel, and custom API workflows.",
+    "displayName": "Revit MCP Next",
+    "shortDescription": "Windows-only Revit 2024 workflows through MCP Next.",
+    "longDescription": "On Windows 11, inspect and automate Autodesk Revit 2024 with compact reads, guarded preview/apply writes, setup diagnostics, and documentation workflows backed by Revit MCP Next.",
     "developerName": "Bhavesh Yeole",
     "category": "Productivity",
     "capabilities": [
-      "skills",
-      "mcp",
-      "hooks"
+      "Interactive",
+      "Read",
+      "Write"
     ],
     "defaultPrompt": [
-      "Set up the Revit bridge.",
-      "Run a Revit health check.",
-      "Work on the current Revit model."
+      "Check Revit and summarize the active model.",
+      "Plan this Revit change and preview it safely.",
+      "Audit the current Revit views and sheets."
     ]
-  },
-  "mcpServers": "./.mcp.json"
+  }
 }

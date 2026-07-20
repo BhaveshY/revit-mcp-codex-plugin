@@ -1,0 +1,12 @@
+interface:
+  display_name: "Work in Revit on Windows"
+  short_description: "Apply guarded Revit changes on Windows 11"
+  default_prompt: "Use $work-revit to preview and verify this Revit change on Windows 11."
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "revit-mcp-next"
+      description: "Revit MCP Next local stdio server"
+      transport: "stdio"
+policy:
+  allow_implicit_invocation: true

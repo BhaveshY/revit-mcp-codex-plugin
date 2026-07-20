@@ -1,10 +1,17 @@
 {
   "mcpServers": {
-    "revit": {
-      "command": "cmd",
+    "revit-mcp-next": {
+      "type": "stdio",
+      "command": "cmd.exe",
       "cwd": ".",
-      "args": ["/c", ".\\scripts\\launch-revit-mcp.cmd"],
-      "env": {}
+      "args": [
+        "/d",
+        "/s",
+        "/c",
+        ".\\scripts\\launch-revit-mcp-next.cmd"
+      ],
+      "env": {},
+      "timeout": 120000
     }
   }
 }

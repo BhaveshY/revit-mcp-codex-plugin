@@ -14,28 +14,32 @@ concurrency:
 
 jobs:
   verify:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-      - name: Validate Codex plugin manifests
+      - name: Validate Codex plugin
+        shell: powershell
         run: python scripts/validate_codex_plugin.py plugins/revit-mcp-cowork
-      - name: Validate JSON files
+      - name: Validate JSON
+        shell: powershell
         run: |
-          python -m json.tool .agents/plugins/marketplace.json >/tmp/revit-marketplace.json
-          python -m json.tool plugins/revit-mcp-cowork/.codex-plugin/plugin.json >/tmp/revit-plugin.json
-          python -m json.tool plugins/revit-mcp-cowork/.mcp.json >/tmp/revit-mcp.json
-          python -m json.tool plugins/revit-mcp-cowork/hooks/hooks.json >/tmp/revit-hooks.json
-      - name: Check hook JavaScript syntax
+          Get-Content .agents/plugins/marketplace.json -Raw | ConvertFrom-Json | Out-Null
+          Get-Content plugins/revit-mcp-cowork/.codex-plugin/plugin.json -Raw | ConvertFrom-Json | Out-Null
+          Get-Content plugins/revit-mcp-cowork/.mcp.json -Raw | ConvertFrom-Json | Out-Null
+      - name: Reject stale or non-Windows integration
+        shell: powershell
         run: |
-          node --check plugins/revit-mcp-cowork/hooks/pre-tool.js
-          node --check plugins/revit-mcp-cowork/hooks/post-tool.js
-          node --check plugins/revit-mcp-cowork/hooks/session-start.js
-      - name: Smoke-test hook behavior
-        run: python scripts/test_revit_hooks.py
+          $stale = Get-ChildItem plugins/revit-mcp-cowork -Recurse -File | Select-String -Pattern 'mcp-server-for-revit|send_code_to_revit|ai_element_filter'
+          if ($stale) { throw "Stale Revit MCP integration found." }
+          $mcp = Get-Content plugins/revit-mcp-cowork/.mcp.json -Raw | ConvertFrom-Json
+          $server = $mcp.mcpServers.'revit-mcp-next'
+          if ($server.command -ne 'cmd.exe') { throw "Revit MCP launcher must remain Windows-only." }
+          if ($server.type -ne 'stdio' -or $server.cwd -ne '.') { throw "Revit MCP must remain a plugin-relative stdio server." }
+
+          $wrapper = Get-Content plugins/revit-mcp-cowork/scripts/launch-revit-mcp-next.cmd -Raw
+          if ($wrapper -notmatch '(?m)^call "%LAUNCHER%"') { throw "Revit wrapper must hand off with CALL." }
+          if ($wrapper -match '(?m)^cmd /c ') { throw "Revit wrapper must not spawn a redundant cmd.exe process." }

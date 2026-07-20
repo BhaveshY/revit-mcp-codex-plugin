@@ -1,0 +1,12 @@
+interface:
+  display_name: "Document Revit on Windows"
+  short_description: "Create Revit documentation on Windows 11"
+  default_prompt: "Use $document-revit to prepare Revit documentation on Windows 11."
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "revit-mcp-next"
+      description: "Revit MCP Next local stdio server"
+      transport: "stdio"
+policy:
+  allow_implicit_invocation: true

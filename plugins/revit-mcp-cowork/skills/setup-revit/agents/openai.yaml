@@ -1,0 +1,6 @@
+interface:
+  display_name: "Set Up Revit on Windows"
+  short_description: "Install Revit MCP Next on Windows 11"
+  default_prompt: "Use $setup-revit to install and verify Revit MCP Next on Windows 11."
+policy:
+  allow_implicit_invocation: true

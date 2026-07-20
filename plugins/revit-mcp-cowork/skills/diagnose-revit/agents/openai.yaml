@@ -1,0 +1,6 @@
+interface:
+  display_name: "Diagnose Revit on Windows"
+  short_description: "Troubleshoot Revit MCP Next on Windows 11"
+  default_prompt: "Use $diagnose-revit to diagnose this Revit MCP failure on Windows 11."
+policy:
+  allow_implicit_invocation: true
