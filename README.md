@@ -50,6 +50,11 @@ turns and tool results, and looks for corrections, inaccurate answers, failed
 attempts, and repeated friction. Raw chats remain in Codex; the plugin does not
 build a second transcript database or commit chat text.
 
+The first review covers the preceding 14 days. Each successful run stores one
+ignored local timestamp; the next run reviews tasks updated after that point,
+with a 24-hour overlap to catch boundary edits. Failed or incomplete runs do not
+advance the timestamp.
+
 The plugin also includes a narrow `PostToolUse` hook for Revit MCP calls. After
 the user reviews and trusts the hook, it records bounded operational metadata
 to corroborate task-history findings: hashed session/turn IDs, tool name,
