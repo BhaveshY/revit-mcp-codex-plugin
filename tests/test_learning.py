@@ -22,6 +22,11 @@ PATCH_SPEC.loader.exec_module(PATCH_GATE)
 
 
 class LearningAnalyzerTests(unittest.TestCase):
+    def test_history_policy_fails_closed_when_task_list_saturates(self) -> None:
+        policy = ANALYZER.load_json(ROOT / "plugins/revit-mcp-cowork/learning/policy.json")
+        self.assertEqual(policy["history_task_limit"], 50)
+        self.assertTrue(policy["fail_on_history_saturation"])
+
     def test_repeated_incident_routes_to_existing_skill(self) -> None:
         policy = ANALYZER.load_json(ROOT / "plugins/revit-mcp-cowork/learning/policy.json")
         catalog = ANALYZER.load_json(ROOT / "plugins/revit-mcp-cowork/learning/capabilities.json")

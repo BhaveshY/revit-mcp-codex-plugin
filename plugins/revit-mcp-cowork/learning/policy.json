@@ -4,6 +4,7 @@
   "history_source": "codex-desktop-task-tools",
   "history_task_limit": 50,
   "history_turn_page_size": 50,
+  "fail_on_history_saturation": true,
   "history_checkpoint_path": ".learning-private/review-checkpoint.json",
   "history_overlap_hours": 24,
   "store_duplicate_raw_transcripts": false,

@@ -44,16 +44,21 @@ and call `revit.status` then `revit.read_bundle`.
 
 ## Evidence-driven improvement
 
-Every two weeks, a Codex desktop automation reviews the recent tasks available
-through the app's task-history tools. It opens likely Revit tasks, reads their
-turns and tool results, and looks for corrections, inaccurate answers, failed
-attempts, and repeated friction. Raw chats remain in Codex; the plugin does not
-build a second transcript database or commit chat text.
+Every Monday at 11:00 AM local time, a Codex desktop automation reviews recent
+tasks through the app's task-history tools using `gpt-5.6-sol` at medium
+reasoning effort. It opens likely Revit tasks, reads their turns and tool results,
+and looks for corrections, inaccurate answers, failed attempts, and repeated
+friction. Raw chats remain in Codex; the plugin does not build a second
+transcript database or commit chat text.
 
 The first review covers the preceding 14 days. Each successful run stores one
 ignored local timestamp; the next run reviews tasks updated after that point,
 with a 24-hour overlap to catch boundary edits. Failed or incomplete runs do not
 advance the timestamp.
+
+The app returns at most 50 recent tasks. If all 50 are newer than the review
+cutoff, the run is marked incomplete and the timestamp is not advanced. This
+prevents an unusually busy week from silently skipping older tasks.
 
 The plugin also includes a narrow `PostToolUse` hook for Revit MCP calls. After
 the user reviews and trusts the hook, it records bounded operational metadata
