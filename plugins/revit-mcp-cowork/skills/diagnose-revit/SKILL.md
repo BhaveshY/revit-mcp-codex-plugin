@@ -36,7 +36,9 @@ Interpret common failures:
   forward, wait for idle, and retry once.
 - generation/document mismatch: refresh bounded reads and rebuild the preview.
 - missing/expired/used preview: preview again; never reuse or fabricate tokens.
-- launcher missing: run `$setup-revit` or set a launcher/install-root override.
+- `LAUNCHER_NOT_FOUND`: verify the existing Revit MCP Next installation and
+  set `REVIT_MCP_NEXT_LAUNCHER` or `REVIT_MCP_NEXT_INSTALL_ROOT` when it uses a
+  non-default location. Do not install or rebuild it automatically.
 
 Do not expose auth files in logs or support output. Do not blindly retry a
 mutation after timeout or unknown commit state; stabilize the bridge and verify

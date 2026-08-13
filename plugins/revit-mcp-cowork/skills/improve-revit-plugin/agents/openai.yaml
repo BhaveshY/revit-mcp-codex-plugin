@@ -1,6 +1,6 @@
 interface:
-  display_name: "Improve Revit Plugin"
-  short_description: "Learn from local Revit Codex tasks"
-  default_prompt: "Use $improve-revit-plugin to review Revit-related local Codex task history and propose the smallest verified improvement."
+  display_name: "Local Revit Learning"
+  short_description: "Set up and run verified local learning"
+  default_prompt: "Use $improve-revit-plugin to set up or run verified local learning from Revit-related Codex tasks."
 policy:
   allow_implicit_invocation: false

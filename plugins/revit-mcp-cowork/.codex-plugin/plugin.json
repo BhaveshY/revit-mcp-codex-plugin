@@ -1,6 +1,6 @@
 {
   "name": "revit-mcp-cowork",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "Windows 11-only Codex plugin for safe Revit 2024 automation with bounded local learning from Codex task history.",
   "author": {
     "name": "Bhavesh Yeole",
@@ -22,7 +22,7 @@
   "interface": {
     "displayName": "Revit MCP Next",
     "shortDescription": "Windows-only Revit 2024 workflows through MCP Next.",
-    "longDescription": "On Windows 11, inspect and automate Autodesk Revit 2024 with compact reads, guarded preview/apply writes, setup diagnostics, documentation workflows, and a review-gated local guidance layer learned from Revit-related Codex tasks.",
+    "longDescription": "On Windows 11, inspect and automate Autodesk Revit 2024 with compact reads, guarded preview/apply writes, connection diagnostics, documentation workflows, and a review-gated local guidance layer learned from Revit-related Codex tasks.",
     "developerName": "Bhavesh Yeole",
     "category": "Productivity",
     "capabilities": [
@@ -31,7 +31,7 @@
       "Write"
     ],
     "defaultPrompt": [
-      "Set up the weekly Revit learning automation on this PC using gpt-5.6-sol with medium reasoning.",
+      "Use $revit-mcp-cowork:improve-revit-plugin to set up the weekly local Revit learning automation using gpt-5.6-sol with medium reasoning.",
       "Check Revit and summarize the active model.",
       "Plan this Revit change and preview it safely.",
       "Audit the current Revit views and sheets."

@@ -1,12 +1,22 @@
 ---
 name: improve-revit-plugin
-description: Improve local Revit MCP guidance from Revit-related Codex task history and sanitized operational evidence. Use only when explicitly asked or by the weekly scheduled review to diagnose repeated failures and corrections, deduplicate lessons, and atomically update the one bounded local guidance skill on this PC.
+description: Set up and run local Revit MCP learning from Revit-related Codex task history and sanitized operational evidence. Use when explicitly asked to configure the weekly learning automation, or by that scheduled review to diagnose repeated failures, deduplicate lessons, and atomically update the one bounded local guidance skill on this PC.
 ---
 
 # Improve Local Revit Guidance
 
-Run from the installed plugin, never a source checkout. Read
-`../../references/improvement-policy.md` and `../../learning/policy.json`.
+Run from the installed plugin, never a source checkout.
+
+## Set up weekly learning
+
+When the user requests setup, read `references/automation.md` and
+`plugin-author-config/automation-config.md`, then follow the idempotent setup
+flow. Revit MCP Next is already installed; do not run installation or build
+steps. A direct starter request is approval to create or repair the automation.
+
+## Weekly review
+
+Read `../../references/improvement-policy.md` and `../../learning/policy.json`.
 
 1. Record the scan start time. Use the manager's `LocalStatus` output to find
    private state. On first use scan 14 days; later scan after the last successful

@@ -32,6 +32,7 @@ $activeSkill = Join-Path $skillParent 'revit-mcp-local-guidance'
 $maxRules = 12
 $maxSkillBytes = 8192
 $maxRuleChars = 300
+$script:stateNeedsMigration = $false
 
 function Write-JsonAtomic([string]$Path, [object]$Value) {
     $parent = Split-Path -Parent $Path
@@ -58,24 +59,44 @@ function New-EmptyState {
     }
 }
 
-function Read-State {
-    if (-not (Test-Path -LiteralPath $statePath)) { return New-EmptyState }
-    $state = Get-Content -LiteralPath $statePath -Raw | ConvertFrom-Json
+function Normalize-State([object]$state) {
     if ($state.schema_version -ne 1 -or $state.skill_name -ne 'revit-mcp-local-guidance' -or $null -eq $state.rules) {
         throw 'The local learning state is invalid.'
     }
     $rules = @($state.rules)
     if ($rules.Count -gt $maxRules) { throw 'The local learning state exceeds the active-rule cap.' }
+    $deduplicated = @{}
+    $legacyBySignature = @{}
     foreach ($rule in $rules) {
-        if ($rule.owner -notin @('setup-revit', 'diagnose-revit', 'inspect-revit', 'work-revit', 'document-revit') -or
+        $legacyOwner = $rule.owner -eq 'setup-revit'
+        if ($legacyOwner) {
+            $rule.owner = 'diagnose-revit'
+            $rule.signature = Get-Signature $rule.owner $rule.issue_id
+            $script:stateNeedsMigration = $true
+        }
+        if ($rule.owner -notin @('diagnose-revit', 'inspect-revit', 'work-revit', 'document-revit') -or
             $rule.issue_id -isnot [string] -or $rule.issue_id -notmatch '^[a-z][a-z0-9-]{2,63}$' -or
             $rule.signature -ne (Get-Signature $rule.owner $rule.issue_id)) {
             throw 'The local learning state contains an invalid rule identity.'
         }
         Assert-SafeRuleText 'stored problem' $rule.problem
         Assert-SafeRuleText 'stored guidance' $rule.guidance
+        if (-not $deduplicated.ContainsKey($rule.signature) -or ($legacyBySignature[$rule.signature] -and -not $legacyOwner)) {
+            $deduplicated[$rule.signature] = $rule
+            $legacyBySignature[$rule.signature] = $legacyOwner
+        } else {
+            $script:stateNeedsMigration = $true
+        }
     }
+    $state.rules = @($deduplicated.Values | Sort-Object owner, issue_id)
     return $state
+}
+
+function Read-State {
+    $script:stateNeedsMigration = $false
+    if (-not (Test-Path -LiteralPath $statePath)) { return New-EmptyState }
+    $state = Get-Content -LiteralPath $statePath -Raw | ConvertFrom-Json
+    return Normalize-State $state
 }
 
 function Assert-NoReparsePoint([string]$Path) {
@@ -153,7 +174,7 @@ function Convert-Candidate([string]$Path) {
     $updates = @($candidate.rules)
     $retire = @($candidate.retire)
     if ($updates.Count + $retire.Count -gt 2) { throw 'A weekly cycle may change at most two local rules.' }
-    $owners = @('setup-revit', 'diagnose-revit', 'inspect-revit', 'work-revit', 'document-revit')
+    $owners = @('diagnose-revit', 'inspect-revit', 'work-revit', 'document-revit')
     $result = @()
     foreach ($rule in $updates) {
         $keys = @($rule.psobject.Properties.Name)
@@ -254,6 +275,7 @@ policy:
 }
 
 function Promote-State([object]$State) {
+    $State = Normalize-State $State
     New-Item -ItemType Directory -Force -Path $skillParent, $localRoot, $generationsRoot | Out-Null
     Repair-Promotion
     Assert-ChildPath $skillParent $activeSkill
@@ -351,7 +373,13 @@ switch ($Action) {
         Assert-NoReparsePoint $activeSkill
         if (Test-Path -LiteralPath $activeSkill) {
             if (-not (Test-Path -LiteralPath $statePath)) { throw 'A colliding unmanaged local skill already exists.' }
-            Write-Output 'Local Revit guidance is already initialized.'
+            $state = Read-State
+            if ($script:stateNeedsMigration) {
+                Promote-State $state
+                Write-Output 'Local Revit guidance was migrated and is ready.'
+            } else {
+                Write-Output 'Local Revit guidance is already initialized.'
+            }
         } else {
             $state = New-EmptyState
             Promote-State $state
@@ -364,7 +392,7 @@ switch ($Action) {
         $retireSignatures = @($parsedCandidate.retire_signatures)
         $state = Read-State
         $rules = [Collections.ArrayList]@(@($state.rules))
-        $changed = $false
+        $changed = $script:stateNeedsMigration
         foreach ($retireSignature in $retireSignatures) {
             for ($index = $rules.Count - 1; $index -ge 0; $index--) {
                 if ($rules[$index].signature -eq $retireSignature) {

@@ -2,14 +2,9 @@
   "schema_version": 1,
   "skills": [
     {
-      "name": "setup-revit",
-      "goal": "Install, connect, repair first-run Revit MCP Next configuration, or provision its weekly learning automation.",
-      "failure_codes": ["LAUNCHER_NOT_FOUND", "PROTOCOL_VERSION_MISMATCH"]
-    },
-    {
       "name": "diagnose-revit",
-      "goal": "Diagnose bridge, queue, add-in, timeout, and preview-token failures.",
-      "failure_codes": ["BRIDGE_UNAVAILABLE", "REVIT_EXTERNAL_EVENT_TIMEOUT", "PROTOCOL_VERSION_MISMATCH", "PREVIEW_EXPIRED", "PREVIEW_NOT_FOUND"]
+      "goal": "Diagnose launcher, bridge, queue, add-in, timeout, protocol, and preview-token failures.",
+      "failure_codes": ["LAUNCHER_NOT_FOUND", "BRIDGE_UNAVAILABLE", "REVIT_EXTERNAL_EVENT_TIMEOUT", "PROTOCOL_VERSION_MISMATCH", "PREVIEW_EXPIRED", "PREVIEW_NOT_FOUND"]
     },
     {
       "name": "inspect-revit",

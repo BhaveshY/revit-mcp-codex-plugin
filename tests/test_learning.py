@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import hashlib
 import json
 import os
 import subprocess
@@ -19,10 +20,10 @@ SPEC.loader.exec_module(ANALYZER)
 class LearningAnalyzerTests(unittest.TestCase):
     def test_team_setup_is_portable_and_uses_supported_automation_flow(self) -> None:
         plugin = ANALYZER.load_json(ROOT / "plugins/revit-mcp-cowork/.codex-plugin/plugin.json")
-        setup = (ROOT / "plugins/revit-mcp-cowork/skills/setup-revit/references/automation.md").read_text(encoding="utf-8")
-        config = (ROOT / "plugins/revit-mcp-cowork/skills/setup-revit/plugin-author-config/automation-config.md").read_text(encoding="utf-8")
-        self.assertEqual(plugin["version"], "1.4.0")
-        self.assertIn("Set up the weekly Revit learning automation on this PC using gpt-5.6-sol with medium reasoning.", plugin["interface"]["defaultPrompt"])
+        setup = (ROOT / "plugins/revit-mcp-cowork/skills/improve-revit-plugin/references/automation.md").read_text(encoding="utf-8")
+        config = (ROOT / "plugins/revit-mcp-cowork/skills/improve-revit-plugin/plugin-author-config/automation-config.md").read_text(encoding="utf-8")
+        self.assertEqual(plugin["version"], "1.5.0")
+        self.assertIn("Use $revit-mcp-cowork:improve-revit-plugin to set up the weekly local Revit learning automation using gpt-5.6-sol with medium reasoning.", plugin["interface"]["defaultPrompt"])
         self.assertIn("projectless task", setup)
         self.assertIn("gpt-5.6-sol", setup)
         self.assertRegex(setup, r"medium\s+reasoning")
@@ -31,6 +32,9 @@ class LearningAnalyzerTests(unittest.TestCase):
         self.assertNotIn("C:\\Users\\Bhavesh", setup + config)
         self.assertNotRegex(setup + config, r"(?i)open (a )?draft PR|clone https|use a source checkout")
         self.assertIn("revit-mcp-local-guidance", setup + config)
+        skill_names = {path.parent.name for path in (ROOT / "plugins/revit-mcp-cowork/skills").glob("*/SKILL.md")}
+        self.assertEqual(skill_names, {"diagnose-revit", "inspect-revit", "work-revit", "document-revit", "improve-revit-plugin"})
+        self.assertFalse((ROOT / "plugins/revit-mcp-cowork/skills/setup-revit").exists())
 
     def test_history_policy_fails_closed_when_task_list_saturates(self) -> None:
         policy = ANALYZER.load_json(ROOT / "plugins/revit-mcp-cowork/learning/policy.json")
@@ -375,6 +379,49 @@ class LocalLearningManagerTests(unittest.TestCase):
             result = self.run_manager(env, "ApplyLocal", candidate=candidate, check=False)
             self.assertNotEqual(result.returncode, 0)
             self.assertEqual(active.read_bytes(), before)
+
+    def test_removed_setup_owner_is_rejected_for_new_rules(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            env, _, user_home = self.prepare(directory)
+            self.run_manager(env, "InitializeLocal")
+            active = user_home / ".agents/skills/revit-mcp-local-guidance/SKILL.md"
+            before = active.read_bytes()
+            removed_owner = self.candidate()
+            removed_owner["rules"][0]["owner"] = "setup-revit"
+            candidate = Path(directory) / "removed-owner.json"
+            candidate.write_text(json.dumps(removed_owner), encoding="utf-8")
+            result = self.run_manager(env, "ApplyLocal", candidate=candidate, check=False)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertEqual(active.read_bytes(), before)
+
+    def test_legacy_setup_rule_migrates_to_diagnose_owner(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            env, plugin_data, user_home = self.prepare(directory)
+            self.run_manager(env, "InitializeLocal")
+            issue_id = "launcher-path-missing"
+            legacy_signature = hashlib.sha256(f"setup-revit|{issue_id}".encode()).hexdigest()[:20]
+            state_path = plugin_data / "local-learning/state.json"
+            state = json.loads(state_path.read_text(encoding="utf-8-sig"))
+            state["rules"] = [{
+                "issue_id": issue_id,
+                "owner": "setup-revit",
+                "problem": "the existing Revit launcher path was not found",
+                "guidance": "Verify the configured launcher path before diagnosing the bridge",
+                "signature": legacy_signature,
+                "updated_at_utc": "2026-08-13T10:00:00+00:00",
+            }]
+            state_path.write_text(json.dumps(state), encoding="utf-8")
+
+            self.run_manager(env, "InitializeLocal")
+
+            migrated = json.loads(state_path.read_text(encoding="utf-8-sig"))
+            expected = hashlib.sha256(f"diagnose-revit|{issue_id}".encode()).hexdigest()[:20]
+            self.assertEqual(migrated["rules"][0]["owner"], "diagnose-revit")
+            self.assertEqual(migrated["rules"][0]["signature"], expected)
+            active = user_home / ".agents/skills/revit-mcp-local-guidance/SKILL.md"
+            rendered = active.read_text(encoding="utf-8-sig")
+            self.assertIn("$revit-mcp-cowork:diagnose-revit", rendered)
+            self.assertNotIn("$revit-mcp-cowork:setup-revit", rendered)
 
     def test_checkpoint_advances_only_through_complete_run_and_rollback_restores(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

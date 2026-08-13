@@ -8,6 +8,12 @@
       "expected_new_skill": false
     },
     {
+      "id": "existing-launcher-diagnostic-skill",
+      "signal": {"error_code": "LAUNCHER_NOT_FOUND", "independent_sessions": 3},
+      "expected_owner": "diagnose-revit",
+      "expected_new_skill": false
+    },
+    {
       "id": "runtime-bridge-defect",
       "signal": {"error_code": "BROKER_CRASH", "independent_sessions": 4},
       "expected_owner": null,

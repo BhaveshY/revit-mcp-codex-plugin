@@ -33,8 +33,8 @@ $env:REVIT_MCP_NEXT_INSTALL_ROOT = "C:\path\to\RevitMcpNext"
 After installation, restart Codex, open Revit 2024 with a disposable project,
 and call `revit.status` then `revit.read_bundle`.
 
-Select the plugin starter **Set up the weekly Revit learning automation on this
-PC using gpt-5.6-sol with medium reasoning** once. Codex verifies the existing Revit MCP runtime, initializes one bounded
+Select the plugin starter **Use Local Revit Learning to set up the weekly Revit
+learning automation using gpt-5.6-sol with medium reasoning** once. Codex verifies the existing Revit MCP runtime, initializes one bounded
 user-level guidance skill, creates a dedicated pinned maintenance task, and
 creates or repairs the Monday 11:00 AM automation. The task uses `gpt-5.6-sol`
 at medium reasoning effort; no path or project ID is copied from another PC.
@@ -48,12 +48,14 @@ required.
 
 ## Skills
 
-- `setup-revit`: install, first connection, and weekly learning setup
+The plugin ships with five bundled skills. After the learning starter runs, it
+also maintains one generated local guidance skill on that PC, for six total.
+
 - `diagnose-revit`: launcher, add-in, queue, and preview diagnostics
 - `inspect-revit`: compact model reads and audits
 - `work-revit`: guarded model mutations
 - `document-revit`: sheets, schedules, annotations, and quantity reporting
-- `improve-revit-plugin`: explicit maintenance workflow used by scheduled quality review
+- `improve-revit-plugin`: weekly learning setup and scheduled local quality review
 
 ## Evidence-driven improvement
 
