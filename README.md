@@ -34,17 +34,17 @@ After installation, restart Codex, open Revit 2024 with a disposable project,
 and call `revit.status` then `revit.read_bundle`.
 
 Select the plugin starter **Set up the weekly Revit learning automation on this
-PC** once. Codex verifies the existing Revit MCP runtime, creates a dedicated
-pinned maintenance task with its own writable source checkout, and creates or
-repairs the Monday 11:00 AM automation. The task uses `gpt-5.6-sol` at medium
-reasoning effort; no path or project ID is copied from the publisher's PC.
+PC using gpt-5.6-sol with medium reasoning** once. Codex verifies the existing Revit MCP runtime, initializes one bounded
+user-level guidance skill, creates a dedicated pinned maintenance task, and
+creates or repairs the Monday 11:00 AM automation. The task uses `gpt-5.6-sol`
+at medium reasoning effort; no path or project ID is copied from another PC.
 
 Codex does not currently expose an install-time scheduled-task hook, so plugin
 installation itself cannot silently activate the automation. The setup starter
 is the one supported onboarding action. The plugin hook separately requires
-Codex's security trust prompt. A teammate also needs GitHub write access to open
-draft PRs against this repository; without it, reviews remain local and report
-the permission gap.
+Codex's security trust prompt, and Codex may request one persistent approval for
+the bundled local-learning manager. No GitHub account or source checkout is
+required.
 
 ## Skills
 
@@ -86,10 +86,13 @@ error codes are not persisted. Set `REVIT_MCP_LEARNING=0` to disable collection.
 disable, enable, delete, or export the sanitized events.
 
 The scheduled task exits without changes unless repeated or reproducible
-evidence clears the policy gates. It prefers updating an existing skill,
-requires regression evidence for behavior changes, and may prepare a draft PR.
-It never auto-merges, publishes, changes auth/permissions, edits installed plugin
-caches, or treats its own maintenance tasks as product evidence.
+evidence clears the policy gates. It maintains exactly one supplementary local
+skill at `%USERPROFILE%\.agents\skills\revit-mcp-local-guidance`; it does not
+rewrite bundled plugin skills or create a growing collection of learned skills.
+The layer is capped at 12 concise rules and 8 KiB, merged by stable issue ID,
+staged before activation, and backed by two known-good rollback generations.
+It never uses Git or GitHub, publishes data, changes auth/permissions, edits an
+installed plugin cache, or treats its own maintenance task as product evidence.
 
 Coverage is the recent local task history returned by the Windows Codex app. It
 does not claim access to unrelated ChatGPT web chats, another computer/profile,

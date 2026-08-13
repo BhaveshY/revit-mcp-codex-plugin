@@ -236,15 +236,27 @@ def validate_learning_files(plugin_root: Path, errors: list[str]) -> None:
     if not all(isinstance(value, dict) and value.get("schema_version") == 1 for value in [policy, catalog, ledger]):
         errors.append("learning policy, capabilities, and ledger must use schema_version 1")
         return
-    if policy.get("auto_merge") is not False or policy.get("auto_publish") is not False:
-        errors.append("learning policy must keep auto_merge and auto_publish false")
+    if policy.get("delivery") != "local-user-skill-only":
+        errors.append("learning policy must remain local-user-skill-only")
     if not policy.get("allow_no_change"):
         errors.append("learning policy must allow a no-change cycle")
     if policy.get("retention_days") != 30:
         errors.append("learning evidence retention_days must be 30")
-    allowed_paths = policy.get("allowed_automatic_paths", [])
-    if "learning/ledger.json" not in allowed_paths:
-        errors.append("learning ledger must be an explicitly allowed automatic metadata path")
+    expected_local = {
+        "local_skill_name": "revit-mcp-local-guidance",
+        "max_active_rules": 12,
+        "max_rule_updates_per_cycle": 2,
+        "max_local_skill_bytes": 8192,
+        "known_good_generations": 2,
+        "max_new_learned_skills": 0,
+    }
+    for key, expected in expected_local.items():
+        if policy.get(key) != expected:
+            errors.append(f"learning policy {key} must be {expected!r}")
+    forbidden_changes = set(policy.get("forbidden_automatic_changes", []))
+    for required in {"installed-plugin-cache", "source-control", "network-delivery", "publishing"}:
+        if required not in forbidden_changes:
+            errors.append(f"learning policy must forbid {required}")
     skill_names = {path.parent.name for path in (plugin_root / "skills").glob("*/SKILL.md")}
     catalog_names = {item.get("name") for item in catalog.get("skills", []) if isinstance(item, dict)}
     expected_catalog = skill_names - {"improve-revit-plugin"}

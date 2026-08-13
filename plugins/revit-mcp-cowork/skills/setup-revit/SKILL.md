@@ -56,7 +56,8 @@ Then read `references/automation.md` and
 flow. A direct request such as the plugin starter prompt is approval to create
 or repair the automation.
 
-The maintenance workspace must be a dedicated projectless Codex task with its
-own writable checkout. Never use an installed plugin cache as source and never
-borrow an unrelated user project. The setup must discover all per-PC task IDs
-and paths instead of copying them from another computer.
+The maintenance workspace must be a dedicated projectless Codex task. Initialize
+the one bounded user skill at `%USERPROFILE%\.agents\skills\revit-mcp-local-guidance`
+through the bundled manager. Never edit an installed plugin cache, clone a
+source repository, or borrow an unrelated project. Setup must discover all
+per-PC task IDs and paths instead of copying them from another computer.

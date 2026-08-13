@@ -22,6 +22,6 @@ Do not add macOS, Linux, WSL, container, Wine, or remote-host fallbacks.
 - Never commit raw chats, prompts, MCP payloads, model data, file paths, identities, or authentication material.
 - Prefer fixing server validation or an existing skill over adding guidance. Create a skill only for a repeated, distinct user goal that no current skill owns.
 - Require deterministic reproduction or repeated independent evidence before changing shared behavior. A no-change cycle is successful.
-- Keep learned patches small and reversible. Do not weaken preview/apply, confirmation, document-generation, or destructive-action safeguards.
-- Add a sanitized regression fixture before accepting a learned rule. Run the full validator and tests after every candidate change.
-- Automated maintenance may prepare a branch or draft PR. It must not merge, publish, change permissions/authentication, or rewrite an installed plugin cache.
+- Keep learned rules small and reversible. Do not weaken preview/apply, confirmation, document-generation, or destructive-action safeguards.
+- Maintain one bounded user-level `revit-mcp-local-guidance` skill. Stage, validate, deduplicate, and preserve known-good rollback generations before activation.
+- Automated maintenance is local-only. It must not use Git or GitHub, publish, change permissions/authentication, rewrite an installed plugin cache, or create multiple competing learned skills.

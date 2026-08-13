@@ -1,6 +1,6 @@
 interface:
   display_name: "Set Up Revit on Windows"
   short_description: "Set up Revit MCP and weekly learning"
-  default_prompt: "Use $setup-revit to verify Revit MCP Next and set up the weekly learning automation on this Windows 11 PC."
+  default_prompt: "Use $setup-revit to verify Revit MCP Next and set up the weekly learning automation on this Windows 11 PC using gpt-5.6-sol with medium reasoning."
 policy:
   allow_implicit_invocation: true
