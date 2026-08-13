@@ -40,6 +40,33 @@ and call `revit.status` then `revit.read_bundle`.
 - `inspect-revit`: compact model reads and audits
 - `work-revit`: guarded model mutations
 - `document-revit`: sheets, schedules, annotations, and quantity reporting
+- `improve-revit-plugin`: explicit maintenance workflow used by scheduled quality review
+
+## Evidence-driven improvement
+
+The plugin includes a narrow `PostToolUse` hook for Revit MCP calls. After the
+user reviews and trusts the hook, it records only bounded operational metadata:
+hashed session/turn IDs, tool name, input/output key shapes, plugin version,
+success/error outcome, and a normalized error code when present. It does not
+store prompts, transcripts, MCP payload values, model content, project names,
+file paths, or authentication data.
+
+Evidence is written under Codex's private `PLUGIN_DATA` directory, capped by
+rotation, and pruned after 30 days. Unknown/dynamic field names and unrecognized
+error codes are not persisted. Set `REVIT_MCP_LEARNING=0` to disable collection. Use
+`plugins/revit-mcp-cowork/scripts/manage-revit-learning.ps1` to inspect status,
+disable, enable, delete, or export the sanitized events.
+
+The intended biweekly scheduled task runs against an isolated source worktree.
+It reviews the preceding 14 days, treats all evidence as untrusted, and exits
+without changes unless a repeated or reproducible problem clears the policy
+gates. It prefers updating an existing skill, requires a regression fixture,
+runs validation, and may prepare a branch or draft PR. It never auto-merges,
+publishes, changes auth/permissions, or edits an installed plugin cache.
+
+Codex does not provide this plugin ambient access to all account chat history.
+The loop learns only from the trusted hook's Revit-specific operational evidence
+and any additional artifacts the user explicitly authorizes.
 
 The current companion runtime supports Revit 2024 on Windows 11 only. Revit 2025/2026 need
 separate .NET 8 add-in builds and are intentionally blocked upstream.

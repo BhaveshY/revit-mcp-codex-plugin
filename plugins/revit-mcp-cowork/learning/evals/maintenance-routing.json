@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "id": "existing-write-skill",
+      "signal": {"error_code": "CHANGE_SET_HASH_MISMATCH", "independent_sessions": 3},
+      "expected_owner": "work-revit",
+      "expected_new_skill": false
+    },
+    {
+      "id": "runtime-bridge-defect",
+      "signal": {"error_code": "BROKER_CRASH", "independent_sessions": 4},
+      "expected_owner": null,
+      "expected_new_skill": false
+    },
+    {
+      "id": "single-ambiguous-failure",
+      "signal": {"error_code": "UNKNOWN", "independent_sessions": 1},
+      "expected_eligible": false
+    }
+  ]
+}

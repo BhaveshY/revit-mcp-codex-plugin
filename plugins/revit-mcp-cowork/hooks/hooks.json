@@ -1,0 +1,19 @@
+{
+  "description": "Collect bounded, value-free operational evidence from Revit MCP calls after explicit hook trust.",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "^(mcp__revit-mcp-next__.*|revit\\..*)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \"${PLUGIN_ROOT}/hooks/collect-revit-evidence.ps1\"",
+            "commandWindows": "powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \"${PLUGIN_ROOT}\\hooks\\collect-revit-evidence.ps1\"",
+            "timeout": 3,
+            "async": true
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -48,3 +48,9 @@ __pycache__/
 # Mirror temp files (safety-pattern Guard 4)
 *.xlsx.tmp.*
 *.backup.*.xlsx
+
+# Private learning evidence must remain local
+events.jsonl
+events.1.jsonl
+learning-report.json
+.learning-private/

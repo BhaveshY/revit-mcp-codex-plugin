@@ -24,6 +24,9 @@ jobs:
       - name: Validate Codex plugin
         shell: powershell
         run: python scripts/validate_codex_plugin.py plugins/revit-mcp-cowork
+      - name: Run offline learning tests
+        shell: powershell
+        run: python -m unittest discover -s tests -v
       - name: Validate JSON
         shell: powershell
         run: |

@@ -1,0 +1,6 @@
+interface:
+  display_name: "Improve Revit Plugin"
+  short_description: "Review sanitized Revit quality evidence"
+  default_prompt: "Use $improve-revit-plugin to review repeated Revit MCP failures and propose the smallest verified plugin improvement."
+policy:
+  allow_implicit_invocation: false

@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "lookback_days": 14,
+  "minimum_occurrences": 3,
+  "minimum_independent_sessions": 2,
+  "max_existing_file_edits_per_cycle": 2,
+  "max_new_skills_per_cycle": 1,
+  "max_net_new_lines": 80,
+  "max_evidence_bytes": 10485760,
+  "retention_days": 30,
+  "allow_no_change": true,
+  "auto_merge": false,
+  "auto_publish": false,
+  "allowed_automatic_paths": [
+    "skills/",
+    "references/",
+    "learning/evals/",
+    "learning/ledger.json"
+  ],
+  "forbidden_automatic_changes": [
+    "authentication",
+    "permissions",
+    "dependencies",
+    "mcp-schema",
+    "preview-apply-safety",
+    "publishing"
+  ]
+}

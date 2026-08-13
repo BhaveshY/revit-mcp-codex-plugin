@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "skills": [
+    {
+      "name": "setup-revit",
+      "goal": "Install, connect, or repair first-run Revit MCP Next configuration.",
+      "failure_codes": ["LAUNCHER_NOT_FOUND", "PROTOCOL_VERSION_MISMATCH"]
+    },
+    {
+      "name": "diagnose-revit",
+      "goal": "Diagnose bridge, queue, add-in, timeout, and preview-token failures.",
+      "failure_codes": ["BRIDGE_UNAVAILABLE", "REVIT_EXTERNAL_EVENT_TIMEOUT", "PROTOCOL_VERSION_MISMATCH", "PREVIEW_EXPIRED", "PREVIEW_NOT_FOUND"]
+    },
+    {
+      "name": "inspect-revit",
+      "goal": "Read, query, audit, and summarize model state without mutation.",
+      "failure_codes": ["CURSOR_INVALID", "DOCUMENT_MISMATCH", "GENERATION_MISMATCH"]
+    },
+    {
+      "name": "work-revit",
+      "goal": "Create or modify model elements through guarded preview and apply.",
+      "failure_codes": ["PREVIEW_EXPIRED", "PREVIEW_ALREADY_USED", "DOCUMENT_MISMATCH", "GENERATION_MISMATCH", "CHANGE_SET_HASH_MISMATCH"]
+    },
+    {
+      "name": "document-revit",
+      "goal": "Create and report sheets, views, schedules, rooms, tags, and quantities.",
+      "failure_codes": ["VIEW_ALREADY_PLACED", "INVALID_SCHEDULE_FIELD", "TITLE_BLOCK_TYPE_REQUIRED"]
+    }
+  ]
+}
