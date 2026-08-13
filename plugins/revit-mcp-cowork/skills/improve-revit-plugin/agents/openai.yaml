@@ -1,6 +1,6 @@
 interface:
   display_name: "Improve Revit Plugin"
-  short_description: "Review sanitized Revit quality evidence"
-  default_prompt: "Use $improve-revit-plugin to review repeated Revit MCP failures and propose the smallest verified plugin improvement."
+  short_description: "Learn from local Revit Codex tasks"
+  default_prompt: "Use $improve-revit-plugin to review Revit-related local Codex task history and propose the smallest verified improvement."
 policy:
   allow_implicit_invocation: false

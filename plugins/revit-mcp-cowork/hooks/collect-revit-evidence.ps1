@@ -12,10 +12,8 @@ function Get-ShortHash([string]$Value) {
     } finally { $sha.Dispose() }
 }
 
-function Get-AllowlistedShape($Value, [string[]]$AllowedKeys, [int]$MaxDepth) {
-    $allowed = [Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
-    foreach ($key in $AllowedKeys) { [void]$allowed.Add($key) }
-    return @(Get-ShapePaths $Value '' 0 $MaxDepth $allowed)
+function Get-AllowlistedShape($Value, [hashtable]$AllowedKeys, [int]$MaxDepth) {
+    return @(Get-ShapePaths $Value '' 0 $MaxDepth $AllowedKeys)
 }
 
 function Get-ShapePaths($Value, [string]$Prefix, [int]$Depth, [int]$MaxDepth, $AllowedKeys) {
@@ -23,15 +21,17 @@ function Get-ShapePaths($Value, [string]$Prefix, [int]$Depth, [int]$MaxDepth, $A
     $paths = [Collections.Generic.List[string]]::new()
     if ($Value -is [Collections.IDictionary]) {
         foreach ($key in @($Value.Keys | Sort-Object | Select-Object -First 64)) {
-            if (-not $AllowedKeys.Contains([string]$key)) { continue }
-            $path = if ($Prefix) { "$Prefix.$key" } else { [string]$key }
+            if (-not $AllowedKeys.ContainsKey([string]$key)) { continue }
+            $canonicalKey = [string]$AllowedKeys[[string]$key]
+            $path = if ($Prefix) { "$Prefix.$canonicalKey" } else { $canonicalKey }
             $paths.Add($path)
             foreach ($child in Get-ShapePaths $Value[$key] $path ($Depth + 1) $MaxDepth $AllowedKeys) { $paths.Add($child) }
         }
     } elseif ($Value -is [pscustomobject]) {
         foreach ($property in @($Value.PSObject.Properties | Sort-Object Name | Select-Object -First 64)) {
-            if (-not $AllowedKeys.Contains($property.Name)) { continue }
-            $path = if ($Prefix) { "$Prefix.$($property.Name)" } else { $property.Name }
+            if (-not $AllowedKeys.ContainsKey($property.Name)) { continue }
+            $canonicalKey = [string]$AllowedKeys[$property.Name]
+            $path = if ($Prefix) { "$Prefix.$canonicalKey" } else { $canonicalKey }
             $paths.Add($path)
             foreach ($child in Get-ShapePaths $property.Value $path ($Depth + 1) $MaxDepth $AllowedKeys) { $paths.Add($child) }
         }
@@ -75,7 +75,7 @@ function Find-ErrorFlag($Value, [int]$Depth = 0) {
         @($Value.Keys | ForEach-Object { [pscustomobject]@{ Name = [string]$_; Value = $Value[$_] } })
     } elseif ($Value -is [pscustomobject]) { @($Value.PSObject.Properties) } else { @() }
     foreach ($property in $properties) {
-        if ($property.Name -match '^(isError|error|failed)$' -and $property.Value -eq $true) { return $true }
+        if ($property.Name -eq 'isError' -and $property.Value -eq $true) { return $true }
         if ($property.Name -eq 'success' -and $property.Value -eq $false) { return $true }
     }
     foreach ($property in $properties) {
@@ -116,8 +116,14 @@ try {
     }
     if (-not $isError) { $code = $null }
     elseif (-not $code -or -not $knownCodes.Contains($code)) { $code = 'UNKNOWN_ERROR' }
-    $inputKeys = @('operations','previewId','baseGeneration','changeSetHash','expiresAt','confirm','documentId','generation','cursor','pageSize','query','filters','category','categories','elementIds','viewId','sheetId','scheduleId','roomIds','parameters','typeId','familyId','levelId','projectName','action','options')
-    $responseKeys = @('isError','success','structuredContent','errorCode','error_code','reasonCode','status','result','data','meta','documentId','generation','previewId','baseGeneration','changeSetHash','expiresAt','cursor','items','warnings','validation','message')
+    $inputKeys = @{}
+    foreach ($key in @('operations','previewId','baseGeneration','changeSetHash','expiresAt','confirm','documentId','generation','cursor','pageSize','query','filters','category','categories','elementIds','viewId','sheetId','scheduleId','roomIds','parameters','typeId','familyId','levelId','projectName','action','options')) {
+        $inputKeys[$key] = $key
+    }
+    $responseKeys = @{}
+    foreach ($key in @('isError','success','structuredContent','errorCode','error_code','reasonCode','status','result','data','meta','documentId','generation','previewId','baseGeneration','changeSetHash','expiresAt','cursor','items','warnings','validation','message')) {
+        $responseKeys[$key] = $key
+    }
     $event = [ordered]@{
         schema_version = 1
         timestamp_utc = [DateTime]::UtcNow.ToString('o')
@@ -132,18 +138,30 @@ try {
     }
     $line = ($event | ConvertTo-Json -Compress -Depth 8) + [Environment]::NewLine
     $lineBytes = [Text.Encoding]::UTF8.GetByteCount($line)
-    if ($lineBytes -gt 16384) { exit 0 }
+    $maxEventBytes = 16384
+    $maxFileBytes = 5242880
+    $maxTotalBytes = 10485760
+    if ($lineBytes -gt $maxEventBytes) { exit 0 }
 
     $mutexName = 'Local\RevitMcpLearning_' + (Get-ShortHash $evidenceRoot)
     $mutex = [Threading.Mutex]::new($false, $mutexName)
     try {
         if (-not $mutex.WaitOne(2000)) { exit 0 }
         $eventsPath = Join-Path $evidenceRoot 'events.jsonl'
-        if ((Test-Path $eventsPath) -and ((Get-Item $eventsPath).Length + $lineBytes) -gt 5242880) {
-            $backup = Join-Path $evidenceRoot 'events.1.jsonl'
+        $backup = Join-Path $evidenceRoot 'events.1.jsonl'
+        if ((Test-Path $eventsPath) -and ((Get-Item $eventsPath).Length + $lineBytes) -gt $maxFileBytes) {
             if (Test-Path $backup) { Remove-Item -LiteralPath $backup -Force }
             Move-Item -LiteralPath $eventsPath -Destination $backup
         }
+        $retainedBytes = $lineBytes
+        foreach ($logPath in @($backup, $eventsPath)) {
+            if (Test-Path $logPath) { $retainedBytes += (Get-Item $logPath).Length }
+        }
+        if ($retainedBytes -gt $maxTotalBytes -and (Test-Path $backup)) {
+            Remove-Item -LiteralPath $backup -Force
+            $retainedBytes = $lineBytes + $(if (Test-Path $eventsPath) { (Get-Item $eventsPath).Length } else { 0 })
+        }
+        if ($retainedBytes -gt $maxTotalBytes) { exit 0 }
         [IO.File]::AppendAllText($eventsPath, $line, [Text.UTF8Encoding]::new($false))
 
         $pruneMarker = Join-Path $evidenceRoot 'last-pruned.txt'

@@ -44,12 +44,16 @@ and call `revit.status` then `revit.read_bundle`.
 
 ## Evidence-driven improvement
 
-The plugin includes a narrow `PostToolUse` hook for Revit MCP calls. After the
-user reviews and trusts the hook, it records only bounded operational metadata:
-hashed session/turn IDs, tool name, input/output key shapes, plugin version,
-success/error outcome, and a normalized error code when present. It does not
-store prompts, transcripts, MCP payload values, model content, project names,
-file paths, or authentication data.
+Every two weeks, a Codex desktop automation reviews the recent tasks available
+through the app's task-history tools. It opens likely Revit tasks, reads their
+turns and tool results, and looks for corrections, inaccurate answers, failed
+attempts, and repeated friction. Raw chats remain in Codex; the plugin does not
+build a second transcript database or commit chat text.
+
+The plugin also includes a narrow `PostToolUse` hook for Revit MCP calls. After
+the user reviews and trusts the hook, it records bounded operational metadata
+to corroborate task-history findings: hashed session/turn IDs, tool name,
+allowlisted input/output shapes, plugin version, outcome, and normalized error.
 
 Evidence is written under Codex's private `PLUGIN_DATA` directory, capped by
 rotation, and pruned after 30 days. Unknown/dynamic field names and unrecognized
@@ -57,16 +61,15 @@ error codes are not persisted. Set `REVIT_MCP_LEARNING=0` to disable collection.
 `plugins/revit-mcp-cowork/scripts/manage-revit-learning.ps1` to inspect status,
 disable, enable, delete, or export the sanitized events.
 
-The intended biweekly scheduled task runs against an isolated source worktree.
-It reviews the preceding 14 days, treats all evidence as untrusted, and exits
-without changes unless a repeated or reproducible problem clears the policy
-gates. It prefers updating an existing skill, requires a regression fixture,
-runs validation, and may prepare a branch or draft PR. It never auto-merges,
-publishes, changes auth/permissions, or edits an installed plugin cache.
+The scheduled task exits without changes unless repeated or reproducible
+evidence clears the policy gates. It prefers updating an existing skill,
+requires regression evidence for behavior changes, and may prepare a draft PR.
+It never auto-merges, publishes, changes auth/permissions, edits installed plugin
+caches, or treats its own maintenance tasks as product evidence.
 
-Codex does not provide this plugin ambient access to all account chat history.
-The loop learns only from the trusted hook's Revit-specific operational evidence
-and any additional artifacts the user explicitly authorizes.
+Coverage is the recent local task history returned by the Windows Codex app. It
+does not claim access to unrelated ChatGPT web chats, another computer/profile,
+or deleted history.
 
 The current companion runtime supports Revit 2024 on Windows 11 only. Revit 2025/2026 need
 separate .NET 8 add-in builds and are intentionally blocked upstream.

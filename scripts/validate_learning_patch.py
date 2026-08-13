@@ -49,6 +49,9 @@ def inspect_json(value: object, location: str, errors: list[str]) -> None:
 def validate(base: str) -> list[str]:
     policy = json.loads((ROOT / PLUGIN_REL / "learning/policy.json").read_text(encoding="utf-8"))
     errors: list[str] = []
+    branch = git("branch", "--show-current").strip()
+    if branch in {"main", "master"} or not branch.startswith("codex/"):
+        errors.append(f"learned patches require a codex/* branch, not {branch or '<detached>'}")
     statuses: dict[str, str] = {}
     for line in git("diff", "--name-status", base).splitlines():
         parts = line.split("\t")
@@ -113,6 +116,18 @@ def validate(base: str) -> list[str]:
         errors.append(f"new-skill budget exceeded: {len(new_skill_names)}")
     if changed_existing > int(policy["max_existing_file_edits_per_cycle"]):
         errors.append(f"existing-file edit budget exceeded: {changed_existing}")
+    behavior_paths = [
+        path for path in statuses
+        if f"/{path.replace(chr(92), '/')}".find(f"/{PLUGIN_REL.as_posix()}/skills/") >= 0
+        or f"/{path.replace(chr(92), '/')}".find(f"/{PLUGIN_REL.as_posix()}/references/") >= 0
+    ]
+    if behavior_paths:
+        eval_prefix = f"{PLUGIN_REL.as_posix()}/learning/evals/"
+        ledger_path = f"{PLUGIN_REL.as_posix()}/learning/ledger.json"
+        if not any(path.startswith(eval_prefix) for path in statuses):
+            errors.append("skill/reference changes require a changed synthetic regression eval")
+        if ledger_path not in statuses:
+            errors.append("skill/reference changes require a ledger update")
     return errors
 
 

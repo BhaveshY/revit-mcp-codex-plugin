@@ -1,7 +1,7 @@
 {
   "name": "revit-mcp-cowork",
-  "version": "1.1.0",
-  "description": "Windows 11-only Codex plugin for safe, token-efficient Autodesk Revit 2024 automation with privacy-preserving quality evidence.",
+  "version": "1.2.0",
+  "description": "Windows 11-only Codex plugin for safe Revit 2024 automation with evidence-driven learning from local Codex task history.",
   "author": {
     "name": "Bhavesh Yeole",
     "url": "https://github.com/BhaveshY"
@@ -22,7 +22,7 @@
   "interface": {
     "displayName": "Revit MCP Next",
     "shortDescription": "Windows-only Revit 2024 workflows through MCP Next.",
-    "longDescription": "On Windows 11, inspect and automate Autodesk Revit 2024 with compact reads, guarded preview/apply writes, setup diagnostics, documentation workflows, and an opt-in evidence-driven improvement loop backed by Revit MCP Next.",
+    "longDescription": "On Windows 11, inspect and automate Autodesk Revit 2024 with compact reads, guarded preview/apply writes, setup diagnostics, documentation workflows, and a review-gated improvement loop that learns from Revit-related local Codex tasks.",
     "developerName": "Bhavesh Yeole",
     "category": "Productivity",
     "capabilities": [

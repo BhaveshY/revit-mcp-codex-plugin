@@ -1,5 +1,5 @@
 {
-  "description": "Collect bounded, value-free operational evidence from Revit MCP calls after explicit hook trust.",
+  "description": "Collect bounded operational markers from Revit MCP calls after explicit hook trust.",
   "hooks": {
     "PostToolUse": [
       {
