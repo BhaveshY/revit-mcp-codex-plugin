@@ -1,6 +1,6 @@
 ---
 name: setup-revit
-description: Install, configure, or repair the Windows 11-only Revit MCP Next plugin for Autodesk Revit 2024 and Codex. Use when the user asks to connect Revit to Codex, install the Revit add-in or MCP bridge, configure the client, or complete first-run setup.
+description: Install, configure, or repair the Windows 11-only Revit MCP Next plugin for Autodesk Revit 2024 and Codex, including the weekly learning automation. Use when the user asks to connect Revit to Codex, install the Revit add-in or MCP bridge, configure the client, complete first-run setup, or set up automatic plugin improvement.
 ---
 
 # Set Up Revit MCP Next
@@ -46,3 +46,17 @@ install the Revit 2024/net48 add-in into those versions.
 
 Normal daily use must not rerun installation or doctor commands. The plugin
 wrapper hands off directly to the installed launcher.
+
+## Weekly learning setup
+
+When the user asks to set up the learning automation, first verify the installed
+launcher and Revit 2024 add-in; do not rebuild an already working MCP runtime.
+Then read `references/automation.md` and
+`plugin-author-config/automation-config.md` and follow their idempotent setup
+flow. A direct request such as the plugin starter prompt is approval to create
+or repair the automation.
+
+The maintenance workspace must be a dedicated projectless Codex task with its
+own writable checkout. Never use an installed plugin cache as source and never
+borrow an unrelated user project. The setup must discover all per-PC task IDs
+and paths instead of copying them from another computer.

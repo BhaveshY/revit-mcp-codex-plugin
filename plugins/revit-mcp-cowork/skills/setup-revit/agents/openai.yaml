@@ -1,6 +1,6 @@
 interface:
   display_name: "Set Up Revit on Windows"
-  short_description: "Install Revit MCP Next on Windows 11"
-  default_prompt: "Use $setup-revit to install and verify Revit MCP Next on Windows 11."
+  short_description: "Set up Revit MCP and weekly learning"
+  default_prompt: "Use $setup-revit to verify Revit MCP Next and set up the weekly learning automation on this Windows 11 PC."
 policy:
   allow_implicit_invocation: true

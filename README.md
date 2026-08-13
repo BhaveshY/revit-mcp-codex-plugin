@@ -33,9 +33,22 @@ $env:REVIT_MCP_NEXT_INSTALL_ROOT = "C:\path\to\RevitMcpNext"
 After installation, restart Codex, open Revit 2024 with a disposable project,
 and call `revit.status` then `revit.read_bundle`.
 
+Select the plugin starter **Set up the weekly Revit learning automation on this
+PC** once. Codex verifies the existing Revit MCP runtime, creates a dedicated
+pinned maintenance task with its own writable source checkout, and creates or
+repairs the Monday 11:00 AM automation. The task uses `gpt-5.6-sol` at medium
+reasoning effort; no path or project ID is copied from the publisher's PC.
+
+Codex does not currently expose an install-time scheduled-task hook, so plugin
+installation itself cannot silently activate the automation. The setup starter
+is the one supported onboarding action. The plugin hook separately requires
+Codex's security trust prompt. A teammate also needs GitHub write access to open
+draft PRs against this repository; without it, reviews remain local and report
+the permission gap.
+
 ## Skills
 
-- `setup-revit`: install and first connection
+- `setup-revit`: install, first connection, and weekly learning setup
 - `diagnose-revit`: launcher, add-in, queue, and preview diagnostics
 - `inspect-revit`: compact model reads and audits
 - `work-revit`: guarded model mutations
@@ -44,7 +57,8 @@ and call `revit.status` then `revit.read_bundle`.
 
 ## Evidence-driven improvement
 
-Every Monday at 11:00 AM local time, a Codex desktop automation reviews recent
+After the one-time setup starter, every Monday at 11:00 AM local time, a Codex
+desktop automation reviews recent
 tasks through the app's task-history tools using `gpt-5.6-sol` at medium
 reasoning effort. It opens likely Revit tasks, reads their turns and tool results,
 and looks for corrections, inaccurate answers, failed attempts, and repeated

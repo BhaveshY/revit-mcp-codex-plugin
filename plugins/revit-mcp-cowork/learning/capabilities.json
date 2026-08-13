@@ -3,7 +3,7 @@
   "skills": [
     {
       "name": "setup-revit",
-      "goal": "Install, connect, or repair first-run Revit MCP Next configuration.",
+      "goal": "Install, connect, repair first-run Revit MCP Next configuration, or provision its weekly learning automation.",
       "failure_codes": ["LAUNCHER_NOT_FOUND", "PROTOCOL_VERSION_MISMATCH"]
     },
     {

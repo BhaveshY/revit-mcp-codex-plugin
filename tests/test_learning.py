@@ -22,6 +22,19 @@ PATCH_SPEC.loader.exec_module(PATCH_GATE)
 
 
 class LearningAnalyzerTests(unittest.TestCase):
+    def test_team_setup_is_portable_and_uses_supported_automation_flow(self) -> None:
+        plugin = ANALYZER.load_json(ROOT / "plugins/revit-mcp-cowork/.codex-plugin/plugin.json")
+        setup = (ROOT / "plugins/revit-mcp-cowork/skills/setup-revit/references/automation.md").read_text(encoding="utf-8")
+        config = (ROOT / "plugins/revit-mcp-cowork/skills/setup-revit/plugin-author-config/automation-config.md").read_text(encoding="utf-8")
+        self.assertEqual(plugin["version"], "1.3.0")
+        self.assertIn("Set up the weekly Revit learning automation on this PC.", plugin["interface"]["defaultPrompt"])
+        self.assertIn("projectless task", setup)
+        self.assertIn("gpt-5.6-sol", setup)
+        self.assertIn("medium reasoning", setup)
+        self.assertIn("Never write an automation TOML", setup)
+        self.assertIn("weekly on Mondays at 11:00 AM local time", config)
+        self.assertNotIn("C:\\Users\\Bhavesh", setup + config)
+
     def test_history_policy_fails_closed_when_task_list_saturates(self) -> None:
         policy = ANALYZER.load_json(ROOT / "plugins/revit-mcp-cowork/learning/policy.json")
         self.assertEqual(policy["history_task_limit"], 50)
